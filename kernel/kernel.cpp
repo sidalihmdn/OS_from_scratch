@@ -2,6 +2,6 @@
 
 
 extern "C" void main(){
-    *(char*)VIDEO_ADDRESS = 'Q';
+    *(char*)VIDEO_ADDRESS = 'S';
     return;
 }
