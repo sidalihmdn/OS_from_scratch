@@ -26,8 +26,8 @@ Welcome to the **Simple i386 Operating System** project! This project aims to de
 1. **Clone the repository:**
    
    ```
-   git clone https://github.com/yourusername/simple-i386-os.git
-   cd simple-i386-os
+   git clone https://github.com/sidalihmdn/OS_from_scratch.git
+   cd OS_from_scratch
    ```
 
 2. **Build the Bootloader and Kernel:**
