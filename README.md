@@ -7,9 +7,13 @@ Welcome to the **Simple i386 Operating System** project! This project aims to de
 ```
 .
 ├── boot
-│   ├── boot.asm     # Boot loader written in assembly
+│   ├── boot.asm           # Boot loader written in assembly
+│   ├── kernel_entry.asm   # Used to redirect to the main function of the kernel that's loaded on the memory
+│   ├── disk_error.asm     # Used as blank spance in order to avoid disk errors 
 ├── kernel
-│   ├── kernel.cpp           # Kernel written in C
+│   ├── kernen.cpp         # Kernel written in C++
+│   ├── kernel.h           # Inteface
+├── drivers                # Contains all the drivers
 ├── Makefile               # Build automation using Make
 ├── build.sh               # Build automation using shell script (deprecated)
 ├── README.md              # You are here
@@ -61,6 +65,7 @@ This project is licensed under the [MIT License](LICENSE), which allows you to f
 ## Acknowledgments
 
 This project is inspired by various tutorials, online resources, and open-source operating system projects. 
+https://github.com/cfenollosa/os-tutorial
 
 ## Disclaimer
 

@@ -26,7 +26,7 @@ run: os.bin
 	qemu-system-i386 -fda os.bin
 
 # Open the connection to qemu and load our kernel-object file with symbols
-debug: os-image.bin kernel.elf
+debug: os.bin kernel.elf
 	qemu-system-i386 -s -fda os.bin &
 	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
