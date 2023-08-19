@@ -6,7 +6,7 @@
 
 void main(){
     clean_screen();
-    print_string("hello world!", 12);
+    print_string("os > ", 5);
     return;
 
 }
