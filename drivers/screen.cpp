@@ -3,6 +3,11 @@
 
 // declarations
 void parse_offset(int &col , int &row , int offset);
+int get_offset(int col, int row);
+int get_cursor();
+void set_cursor(int offset);
+void set_cursor(int offset);
+//#################################################
 
 /// @brief this function prints a carater into the screen
 /// @param attribute forground and background colors
@@ -46,7 +51,7 @@ void print_string(char string[], int len){
     }
 }
 
-/// @brief calculate the offset given a column and row number 
+/// @brief calculate the offset given a column and row number
 /// @param col is the column number
 /// @param row is the row number
 /// @return the offset

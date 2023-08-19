@@ -7,11 +7,8 @@
 #define REG_SCREEN_CTRL 0x3D4
 #define REG_SCREEN_DATA 0x3D5
 
+
+
 void clean_screen();
-
-int get_cursor();
-int get_offset(int col, int row);
-void set_cursor(int offset);
-
 void print_char(char attribute, int col, int row , char character);
 void print_string(char string[], int len);

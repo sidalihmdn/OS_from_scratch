@@ -39,7 +39,9 @@ Welcome to the **Simple i386 Operating System** project! This project aims to de
    - Run the following commands in the project root directory to build the bootloader and kernel:
    
      ```
-     make all
+     make os.bin # build the binary
+     make run    # build & run 
+     make clean  # clean all the binary & object files
      ```
 
    - This will generate a `bootloader.bin` and `kernel.bin` in their respective directories.
