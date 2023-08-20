@@ -36,6 +36,6 @@ char *int2String(int a){
 
 
 char *hex2char(char hex){
-    return ;
+    return 0;
 }
 
