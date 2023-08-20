@@ -45,3 +45,17 @@ __attribute__((interrupt)) void expt_handler(idt_frame* idr_frame32 , uint32_t e
 __attribute__((interrupt)) void int_handeler(idt_frame* idr_frame32){
     print_string("DEFAULT INTERRUPT HANDLER - ERROR CODE", 37);
 }
+
+/// @brief this function will initialise the idt
+/// @param kernel_code_seg 
+/// @param offset 
+/// @param attribute 
+/// @param idt_descriptor 
+void init_idt_desc(uint16_t kernel_code_seg, uint32_t offset, uint16_t attribute,idt_entry_32 *idt_descriptor)
+{
+    idt_descriptor->isr_addr_low = (offset & 0xffff);
+    idt_descriptor->kernel_code_seg = kernel_code_seg;
+    idt_descriptor->attributes = attribute;
+    idt_descriptor->isr_addr_high = (offset & 0xffff0000) >> 16;
+    return;
+}
