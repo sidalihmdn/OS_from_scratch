@@ -1,5 +1,5 @@
 C_SOURCES = $(wildcard io_functions/*.cpp kernel/*.cpp drivers/*.cpp)
-HEADERS = $(wildcard io_functions/*.h kernel/*.h drivers/*.h)
+HEADERS = $(wildcard io_functions/*.h kernel/*.h drivers/*.h */*.h)
 # Nice syntax for file extension replacement
 OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES))
 
