@@ -51,6 +51,7 @@ Welcome to the **Simple i386 Operating System** project! This project aims to de
    - You can use an x86 emulator like QEMU to test the operating system:
    
      ```
+     make run
      qemu-system-i386 -drive format=raw,file=bin/OS.bin
      ```
 
