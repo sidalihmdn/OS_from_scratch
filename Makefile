@@ -7,7 +7,7 @@ OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES))
 CC =i386-elf-gcc
 GDB =i386-elf-gdb
 # -g: Use debugging symbols in gcc
-CFLAGS = -g
+CFLAGS = -g -mgeneral-regs-only
 
 # First rule is run by default
 os.bin: boot/boot.bin kernel.bin

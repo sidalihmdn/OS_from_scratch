@@ -35,8 +35,7 @@ __attribute__((noreturn))
 extern "C" void exception_handler(void);
 
 // interrupt handler
-__attribute__((noreturn))
-void int_handeler(void);
+extern "C" void int_handler(idt_frame *frame);
 
 /// @brief this function will initialise the idt descriptor
 /// @param kernel_code_seg the adress of the code segement
