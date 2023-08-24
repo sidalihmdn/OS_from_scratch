@@ -10,7 +10,7 @@
 
 void main(){
     clean_screen();
-    print_string((char *)"os > ", 5);
+    zprint("os > ");
     int data = inb(0x61);     
     outb(0x61,data | 0x80);//Disables the keyboard  
     outb(0x61,data & 0x7F);//Enables the keyboard  
@@ -19,8 +19,8 @@ void main(){
     //print_string(int2String(1234),4);
     set_idt();
     int a = 12/0;
-    
-    int b = 12/0;
+    print_string((char *)"hrhr\n",5);
+    //int b = 12/0;
     
     for(;;){}
     //print_char(0, -1 , -1 , '0'+ len((char *)"les"));

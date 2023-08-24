@@ -7,8 +7,14 @@
 #define REG_SCREEN_CTRL 0x3D4
 #define REG_SCREEN_DATA 0x3D5
 
+// declarations
 
+void print_char(char attribute, int col, int row , char character);
+void zprint(char string[]);
+void print_string(char string[], int len);
+
+
+void set_cursor(int offset);
 
 void clean_screen();
-void print_char(char attribute, int col, int row , char character);
-void print_string(char string[], int len);
+
