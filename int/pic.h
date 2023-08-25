@@ -1,6 +1,4 @@
-#ifndef PIC_H
-#define PIC_H
-
+#pragma once
 #include "../includes/unit_types.h"
 
 #define MASTER_PIC_CMD  0x20  // master pic data port
@@ -34,6 +32,4 @@ void IRQ_clear_mask(uint8_t IRQLine);
 
 
 
-#endif // !PIC_H
-#define PIC_H
 

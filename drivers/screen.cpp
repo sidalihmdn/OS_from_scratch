@@ -31,7 +31,7 @@ void print_char(char attribute, int col, int row , char character){
     }
 
     if(character=='\n'){
-        set_cursor(offset+(MAX_COL*2-offset%MAX_COL));
+        set_cursor(offset+(MAX_COL*2-offset%(MAX_COL*2)));
     }
     else{
         video_address[offset] = character;
@@ -41,8 +41,8 @@ void print_char(char attribute, int col, int row , char character){
     }
 }
 
-void zprint(char string[]){
-  int i = 0;
+void zprint(char *string){
+int i = 0;
   while(string[i]!='\0'){
     print_char(WHITE_ON_BLACK,-1,-1, string[i]);
     i++;

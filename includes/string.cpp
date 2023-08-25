@@ -5,7 +5,7 @@
 /// @return the length of the string
 int len(char* c){
     int i = 0;
-    while (c[i]=!0){
+    while (c[i]='\0'){
         i++;
     }
     return i;
@@ -15,12 +15,22 @@ int len(char* c){
 /// @param number 
 /// @return the number of digits (example 1234 -> 4)
 int nb_digits(int number){
-    int digits;
+    int digits=0;
     while(number > 0){
         ++digits;
         number=number/10;
     }
     return digits;
+}
+
+// this function will return the number of hex digits (if we can call them digits)
+int nb_hex(int number){
+  int nbHex=0;
+  while (number>0){
+    ++nbHex;
+    number=number/16;
+  }
+  return nbHex;
 }
 
 /// @brief return the asci code of a given number (0-9)
@@ -36,18 +46,32 @@ char int2char(int a){
 char *int2String(int a){
     int digits_number = nb_digits(a);
     char *c;
-    int i = 0;
+    int i = 1;
     while(a > 0){
-        i++;
-        c[digits_number-i+1]= int2char(a%10);
+        c[digits_number-i]= int2char(a%10);
         a = a/10 ;
+        i++;
     }
-    c[digits_number+1] = 0;
+    c[digits_number] = '\0';
     return c;
 }
 
 
-char *hex2char(char hex){
-    return 0;
+char hex2char(int hex){
+    return '0' + hex;
 }
 
+char *hex2String(int hex){
+  int nbHex = nb_hex(hex);
+  char *c;
+  c[0] = '0';
+  c[1] = 'x';
+  int i = 1;
+  while(hex > 0){
+    c[2+nbHex-i] = hex2char(hex%16);
+    hex = hex/16;
+    i++;
+  }
+  c[nbHex+2]='\0';
+  return c;
+}

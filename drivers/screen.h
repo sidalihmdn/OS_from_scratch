@@ -10,7 +10,7 @@
 // declarations
 
 void print_char(char attribute, int col, int row , char character);
-void zprint(char string[]);
+void zprint(char *string);
 void print_string(char string[], int len);
 
 

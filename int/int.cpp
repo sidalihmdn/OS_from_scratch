@@ -1,13 +1,11 @@
 #include "int.h"
 #include "../includes/string.h"
-
+#include "pic.h"
 idt_entry_32 idt[256]; 
 idtr_32 idtr;
-extern void* isr_stub_table[];
-extern void* irq_stub_table[];
 
-__attribute__((noreturn))
-void exception_handler(){
+__attribute__((interrupt))
+void exception_handler(idt_frame *frame){
   print_string((char *)"Except",6);
 }
 
@@ -17,7 +15,12 @@ __attribute__ ((interrupt)) void divid_except_handler(idt_frame *frame){
 }
 
 __attribute__((interrupt)) void int_handler(idt_frame *frame){
-  print_string((char *)"interrupt\n",10);
+  zprint("interrupt ! ");
+}
+
+//timer handler 
+__attribute__((interrupt)) void time_handler(idt_frame *frame){
+  send_EOI(0);
 }
 
 void init_idt_desc(
@@ -45,7 +48,7 @@ void set_idt(){
 
   // set ISRs from 0-31 to handel exceptions
   for(uint8_t entry =0 ; entry < 32 ; entry++){
-    init_idt_desc(isr_stub_table[entry],
+    init_idt_desc((void *)exception_handler,
                   INT_GATE_FLAG,
                   entry);
 
@@ -53,7 +56,7 @@ void set_idt(){
 
   //setting the IRQs
   for (uint8_t entry=32 ; entry < 48 ; entry++){
-    init_idt_desc(irq_stub_table[entry],
+    init_idt_desc((void *)int_handler,
                   INT_GATE_FLAG,
                   entry);
   }
@@ -62,11 +65,13 @@ void set_idt(){
                 INT_GATE_FLAG,
                 0);
   
-  init_idt_desc((void *)int_handler,
+  // set the timer irq
+  init_idt_desc((void *)time_handler,
                 INT_GATE_FLAG,
-                33);
+                32);
 
   __asm__ volatile("lidt %0" : : "m"(idtr));
+  __asm__ volatile("sti");
 }
 
 

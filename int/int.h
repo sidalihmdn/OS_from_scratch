@@ -1,7 +1,5 @@
 // this file contains the function declarations for interrup handling
-// still learning about it
-#ifndef INT_H
-#define INT_H
+#pragma once
 
 #include "../includes/unit_types.h"
 #include "../drivers/screen.h"
@@ -31,11 +29,11 @@ typedef struct idt_frame{
 }__attribute__ ((packed)); // set the idt and the idtr 
 
 // exception handler
-__attribute__((noreturn))
-extern "C" void exception_handler(void);
+__attribute__((interrupt))
+void exception_handler(idt_frame *frame);
 
 // interrupt handler
-extern "C" void int_handler(idt_frame *frame);
+void int_handler(idt_frame *frame);
 
 /// @brief this function will initialise the idt descriptor
 /// @param kernel_code_seg the adress of the code segement
@@ -46,4 +44,3 @@ void init_idt_desc(void *isr , uint8_t attribute, uint8_t entry);
 
 void set_idt(void);
 
-#endif // !INT_H

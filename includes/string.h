@@ -1,11 +1,10 @@
-#ifndef STRING_H
-#define STRING_H
+#pragma once
 // functions declarations
- //
  int len(char *c);
- int nb_digits(int number);
  char int2char(int a);
  char *int2String(int a);
- char *hex2char(char hex);
+ char hex2char(char hex);
+ char *hex2String(int hex);
+ bool strInArray(char *str, char *array[]);
+ bool strCmp(char *str1, char *str2);
 
-#endif //STRING_H

@@ -4,7 +4,13 @@
 #define KEYBOARD_H
 #define IRQ1 33
 
+struct buffer{
+  int len=0;
+  char *data;
+};
 
-void keyboard_callback(void);
+
 void init_keyboard(void);
+char* get_buffer();
+void clear_buffer(buffer *buf);
 #endif
