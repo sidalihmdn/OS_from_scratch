@@ -1,6 +1,7 @@
 #include "../drivers/keyboard.h"
 #include "../drivers/screen.h"
 #include "../includes/string.h"
+#include "../includes/time.h"
 #include "../int/int.h"
 #include "../int/pic.h"
 #include "../io_functions/low_level.h"
@@ -10,6 +11,7 @@
 #endif
 
 int main() {
+  date_time date1;
   clean_screen();
   zprint("os > ");
   int data = inb(0x61);
@@ -20,9 +22,10 @@ int main() {
   // print_string(int2String(1234),4);
   set_idt();
   init_keyboard();
-  // int a = 12/0;
-  // zprint("hrhr\n");
-  // int b = 12/0;
+  print_date();
+  //  int a = 12/0;
+  //  zprint("hrhr\n");
+  //  int b = 12/0;
 
   // testing the hex2string io_function
   // zprint(hex2String(0x1234));
