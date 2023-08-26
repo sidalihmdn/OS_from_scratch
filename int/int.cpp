@@ -6,11 +6,11 @@ idt_entry_32 idt[256];
 idtr_32 idtr;
 
 __attribute__((interrupt)) void exception_handler(idt_frame *frame) {
-  print_string((char *)"Except", 6);
+  zprint((char *)"Except");
 }
 
 __attribute__((interrupt)) void divid_except_handler(idt_frame *frame) {
-  print_string("Divide Exception!\n", 18);
+  zprint("Divide Exception!\n");
   frame->eip++;
 }
 
@@ -19,7 +19,12 @@ __attribute__((interrupt)) void int_handler(idt_frame *frame) {
 }
 
 // timer handler
-__attribute__((interrupt)) void time_handler(idt_frame *frame) { send_EOI(0); }
+__attribute__((interrupt)) void time_handler(idt_frame *frame) {
+  static int i = 0;
+  print_string("Timer Tick : ", 60, 0);
+  print_string(int2String(i++), 73, 0);
+  send_EOI(0);
+}
 
 void init_idt_desc(void *isr, uint8_t attributes, uint8_t entry) {
   idt_entry_32 *idt_descriptor = &idt[entry];
