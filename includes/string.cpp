@@ -1,11 +1,12 @@
 #include "string.h"
+#include "../drivers/screen.h"
 
 /// @brief this function will return the lenght of a given string
 /// @param c the address of the first character of the string
 /// @return the length of the string
-int len(char *c) {
+int len(char c[]) {
   int i = 0;
-  while (c[i] == '\0') {
+  while (c[i] != '\0') {
     i++;
   }
   return i;
@@ -70,4 +71,27 @@ char *hex2String(int hex) {
   }
   c[nbHex + 2] = '\0';
   return c;
+}
+
+// concatenate 2 strings
+char *strCat(char *str1, char *str2) {
+  int len_str1 = len(str1);
+  int len_str2 = len(str2);
+  char *str;
+  for (int i = 0; i < len_str1; i++)
+    str[i] = str1[i];
+
+  for (int i = 0; i < len_str2; i++) {
+    str[len_str1 + i] = str2[i];
+  }
+  str[len_str1 + len_str2] = '\0';
+  return str;
+}
+
+char *strCatMulti(char **str, int count) {
+  char *concate_str = str[0];
+  for (int i = 1; i < count; i++) {
+    concate_str = strCat(concate_str, str[i]);
+  }
+  return concate_str;
 }

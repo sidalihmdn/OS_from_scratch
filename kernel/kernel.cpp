@@ -1,31 +1,17 @@
-#include "../drivers/keyboard.h"
+#include "../drivers/HAL.h"
 #include "../drivers/screen.h"
-#include "../includes/string.h"
 #include "../includes/time.h"
-#include "../int/int.h"
-#include "../int/pic.h"
-#include "../io_functions/low_level.h"
-
-#if DEBUG
-// some debug code
-#endif
 
 int main() {
-  date_time date1;
+  HAL_init();
   clean_screen();
   zprint("os > ");
-  int data = inb(0x61);
-  outb(0x61, data | 0x80); // Disables the keyboard
-  outb(0x61, data & 0x7F); // Enables the keyboard
-  PIC_remap(0x20, 0x28);
-  IRQ_clear_mask(1);
   // print_string(int2String(1234),4);
-  set_idt();
-  init_keyboard();
-  print_date();
-  //  int a = 12/0;
-  //  zprint("hrhr\n");
-  //  int b = 12/0;
+  zprint("\nhi");
+  // print_date();
+  //    int a = 12/0;
+  //    zprint("hrhr\n");
+  //    int b = 12/0;
 
   // testing the hex2string io_function
   // zprint(hex2String(0x1234));

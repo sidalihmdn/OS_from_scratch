@@ -21,4 +21,4 @@ struct date_time {
 };
 
 void get_date_time(date_time *date_struct);
-void print_date(void); // TODO : maybe add a parameter to specify the pos
+void print_date();

@@ -8,8 +8,6 @@
 uint8_t read_rtc(uint8_t reg);
 void set_binary24hours_mode(void);
 
-static date_time date;
-
 void get_date_time(date_time *date_struct) {
   set_binary24hours_mode();
   date_struct->year = read_rtc(RTC_YEAR);
@@ -39,11 +37,13 @@ void set_binary24hours_mode() {
 }
 
 void print_date() {
+  static date_time date;
   get_date_time(&date);
-  char *year = int2String(date.year);
-  char *month = int2String(date.month);
-  char *day = int2String(date.day);
-  print_string(int2String(date.year), 70, 1);
-  print_string(int2String(date.month), 73, 1);
-  print_string(int2String(date.day), 76, 1);
+  char *date_string[3] = {int2String(date.year), int2String(date.month),
+                          int2String(date.day)};
+
+  char *date_ = strCatMulti(date_string, 3);
+  // print_string(strCatMulti(date_string, 5), 60, 1);
+  // print_string(int2String(date.year), 60, 2);
+  zprint(date_);
 }

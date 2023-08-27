@@ -69,9 +69,9 @@ void zprint(char *string) {
 }
 
 // print a string into a given positon in the screen
-void print_string(char string[], uint8_t x, uint8_t y) {
-  for (; *string != '\0'; *string++) {
-    print_char_no_cursor(WHITE_ON_BLACK, x++, y, *string);
+void print_string(char *string, uint8_t x, uint8_t y) {
+  for (int i = 0; string[i] != '\0'; i++) {
+    print_char_no_cursor(WHITE_ON_BLACK, x + i, y, string[i]);
   }
 }
 
