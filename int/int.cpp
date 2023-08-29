@@ -5,18 +5,20 @@
 idt_entry_32 idt[256];
 idtr_32 idtr;
 ///
+__attribute__((no_caller_saved_registers)) void int_message(char *msg);
 ///
 __attribute__((interrupt)) void exception_handler(idt_frame *frame) {
-  zprint((char *)"Except");
+  int_message("exception !\n");
+  frame->eip++;
 }
 
 __attribute__((interrupt)) void divid_except_handler(idt_frame *frame) {
-  zprint("Divide Exception!\n");
+  int_message("Divide Exception!\n");
   frame->eip++;
 }
 
 __attribute__((interrupt)) void int_handler(idt_frame *frame) {
-  zprint("interrupt ! ");
+  int_message("interrupt ! ");
 }
 
 void init_idt_desc(void *isr, uint8_t attributes, uint8_t entry) {
@@ -52,6 +54,12 @@ void set_idt() {
   // set a costume divide exception handler
   init_idt_desc((void *)divid_except_handler, INT_GATE_FLAG, 0);
 
+  // init_idt_desc((void *)divid_except_handler, INT_GATE_FLAG, 13);
+
   __asm__ volatile("lidt %0" : : "m"(idtr));
   __asm__ volatile("sti");
+}
+
+__attribute__((no_caller_saved_registers)) void int_message(char *msg) {
+  zprint(msg);
 }

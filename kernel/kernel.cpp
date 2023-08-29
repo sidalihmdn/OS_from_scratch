@@ -2,10 +2,14 @@
 #include "../drivers/screen.h"
 #include "../includes/time.h"
 
+#if DEBUG
+// some debug code
+#endif
+
 int main() {
-  HAL_init();
   clean_screen();
-  zprint("os > ");
+  zprint("berkukes # ");
+  HAL_init();
   // print_string(int2String(1234),4);
   zprint("\nhi");
   // print_date();

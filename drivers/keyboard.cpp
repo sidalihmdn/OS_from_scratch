@@ -36,7 +36,6 @@ const char kbd_US[128] = {
     '-', 0,                                         /* Left Arrow */
     0,   0,                                         /* Right Arrow */
     '+', 0,                                         /* 79 - End key*/
-    0,                                              /* Down Arrow */
     0,                                              /* Page Down */
     0,                                              /* Insert Key */
     0,                                              /* Delete Key */
@@ -45,7 +44,6 @@ const char kbd_US[128] = {
     0, /* All other keys are undefined */
 };
 
-__attribute__((interrupt)) void timer(idt_frame *frame) { send_EOI(0); }
 __attribute__((interrupt)) void keyboard_callback(idt_frame *frame) {
   entry_process(scancode());
   send_EOI(1);
@@ -53,7 +51,7 @@ __attribute__((interrupt)) void keyboard_callback(idt_frame *frame) {
 
 // initialize the irq
 void init_keyboard() {
-  init_idt_desc((void *)timer, INT_GATE_FLAG, 32);
+  IRQ_clear_mask(1);
   init_idt_desc((void *)keyboard_callback, INT_GATE_FLAG, 33);
 }
 

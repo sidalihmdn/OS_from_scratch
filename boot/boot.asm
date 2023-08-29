@@ -1,5 +1,6 @@
-[org 0x7c00] ; setting the adress offset
+[org 0x7c00] ; 3setting the adress offset
 KERNEL_ADDR equ 0x1000
+; reading from disk
 BOOT_DISK : db 0
 mov [BOOT_DISK], dl
 
@@ -11,7 +12,7 @@ mov bp, 0x8000
 mov sp, bp
 
 mov bx, KERNEL_ADDR
-mov dh, 20
+mov dh, 26
 
 mov ah, 0x02
 mov al, dh
@@ -24,6 +25,7 @@ mov dl, [BOOT_DISK]
 int 0x13
 
 ; switching to text mode and clearing the screen
+
 mov ah, 0x00
 mov al, 0x03
 int 0x10

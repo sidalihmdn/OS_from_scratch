@@ -10,12 +10,13 @@ GDB =i386-elf-gdb
 CFLAGS = -g -mgeneral-regs-only
 
 # First rule is run by default
-os.bin: boot/boot.bin kernel.bin
+os.bin: boot/boot.bin kernel.bin 
 	cat $^ > os.bin
 
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
-kernel.bin: boot/kernel_entry.o ${OBJ} 
+
+kernel.bin: boot/kernel_entry.o ${OBJ}  
 	i386-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
 
 # Used for debugging purposes

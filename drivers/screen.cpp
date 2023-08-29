@@ -9,6 +9,7 @@ int get_cursor();
 void set_cursor(int offset);
 void set_cursor(int offset);
 // #################################################
+unsigned char *video_address = (unsigned char *)VIDEO_ADDRESS;
 
 /// @brief this function prints a carater into the screen
 /// @param attribute forground and background colors
@@ -16,8 +17,6 @@ void set_cursor(int offset);
 /// @param row the row number
 /// @param character the caracter that we wish to print
 void print_char(char attribute, int col, int row, char character) {
-  unsigned char *video_address = (unsigned char *)VIDEO_ADDRESS;
-
   // if there's no attribute we'll use the default white on black
   if (!attribute) {
     attribute = WHITE_ON_BLACK;
@@ -44,8 +43,6 @@ void print_char(char attribute, int col, int row, char character) {
 // won't change the cursor position it will be useful to add some static text (
 // date or status)
 void print_char_no_cursor(char attribute, int col, int row, char character) {
-  unsigned char *video_address = (unsigned char *)VIDEO_ADDRESS;
-
   // if there's no attribute we'll use the default white on black
   if (!attribute) {
     attribute = WHITE_ON_BLACK;
@@ -54,7 +51,6 @@ void print_char_no_cursor(char attribute, int col, int row, char character) {
   int offset = get_offset(col, row);
   video_address[offset] = character;
   video_address[offset + 1] = attribute;
-  // change the cursor pos
 }
 
 // this function prints a string into the string
@@ -69,9 +65,11 @@ void zprint(char *string) {
 }
 
 // print a string into a given positon in the screen
-void print_string(char *string, uint8_t x, uint8_t y) {
-  for (int i = 0; string[i] != '\0'; i++) {
+void print_string(char *string, int x, int y) {
+  int i = 0;
+  while (string[i] != '\0') {
     print_char_no_cursor(WHITE_ON_BLACK, x + i, y, string[i]);
+    i++;
   }
 }
 

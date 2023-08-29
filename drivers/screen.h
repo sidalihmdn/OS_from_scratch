@@ -15,7 +15,7 @@
 
 void print_char(char attribute, int col, int row, char character);
 void zprint(char *string);
-void print_string(char *string, uint8_t x, uint8_t y);
+void print_string(char *string, int x, int y);
 
 void set_cursor(int offset);
 

@@ -18,7 +18,7 @@ struct date_time {
   uint8_t hour;
   uint8_t minute;
   uint8_t second;
-};
+} __attribute__((packed));
 
-void get_date_time(date_time *date_struct);
+void get_date_time(struct date_time *date);
 void print_date();

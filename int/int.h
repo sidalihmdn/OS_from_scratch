@@ -7,7 +7,7 @@
 #define INT_GATE_FLAG 0x8E
 #define TRAP_GATE_FLAG 0x8F
 
-typedef struct idt_entry_32 {
+struct idt_entry_32 {
   uint16_t isr_addr_low;    // low address of the isr
   uint16_t kernel_code_seg; // the kernel code segement address
   uint8_t reservet;         // 8 bit set to 0  (reserved by the cpu)
@@ -15,12 +15,12 @@ typedef struct idt_entry_32 {
   uint16_t isr_addr_high;   // high address of the isr
 } __attribute__((packed));
 
-typedef struct idtr_32 {
+struct idtr_32 {
   uint16_t limite;
   uint32_t base;
 } __attribute__((packed));
 
-typedef struct idt_frame {
+struct idt_frame {
   uint32_t eip;
   uint32_t cs;
   uint32_t eflags;
