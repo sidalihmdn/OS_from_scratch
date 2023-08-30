@@ -1,5 +1,7 @@
 [org 0x7c00] ; 3setting the adress offset
 KERNEL_ADDR equ 0x1000
+KERNEL_STACK_TOP equ 0x90000   ; Choose a suitable address
+mov esp, KERNEL_STACK_TOP
 ; reading from disk
 BOOT_DISK : db 0
 mov [BOOT_DISK], dl
@@ -8,8 +10,6 @@ mov [BOOT_DISK], dl
 xor ax, ax
 mov es, ax
 mov ds, ax
-mov bp, 0x8000
-mov sp, bp
 
 mov bx, KERNEL_ADDR
 mov dh, 26
@@ -29,7 +29,6 @@ int 0x13
 mov ah, 0x00
 mov al, 0x03
 int 0x10
-
 ; entering the protected mode
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start

@@ -8,13 +8,14 @@ idtr_32 idtr;
 __attribute__((no_caller_saved_registers)) void int_message(char *msg);
 ///
 __attribute__((interrupt)) void exception_handler(idt_frame *frame) {
-  int_message("exception !\n");
-  frame->eip++;
+  uint32_t cs_value = frame->cs;
+  uint8_t interrupt_number = (uint8_t)(cs_value & 0xFF);
+  int_message("exception ");
+  int_message(int2String(interrupt_number));
 }
 
 __attribute__((interrupt)) void divid_except_handler(idt_frame *frame) {
   int_message("Divide Exception!\n");
-  frame->eip++;
 }
 
 __attribute__((interrupt)) void int_handler(idt_frame *frame) {
