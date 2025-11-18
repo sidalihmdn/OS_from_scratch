@@ -9,7 +9,7 @@
 #define INT_GATE_FLAG   0x8E   
 #define TRAP_GATE_FLAG  0x8F
 
-typedef struct idt_entry_32 {
+struct idt_entry_32 {
     uint16_t isr_addr_low;        // low address of the isr
     uint16_t kernel_code_seg;     // the kernel code segement address
     uint8_t reservet;             // 8 bit set to 0  (reserved by the cpu)
@@ -17,12 +17,12 @@ typedef struct idt_entry_32 {
     uint16_t isr_addr_high;       // high address of the isr
 } __attribute__ ((packed));
 
-typedef struct idtr_32{ 
+struct idtr_32{ 
     uint16_t limite; 
     uint32_t base; 
 }__attribute__ ((packed)); 
 
-typedef struct idt_frame{ 
+struct idt_frame{ 
     uint32_t eip;  
     uint32_t cs; 
     uint32_t eflags; 
@@ -30,13 +30,22 @@ typedef struct idt_frame{
     uint32_t ss; 
 }__attribute__ ((packed)); // set the idt and the idtr 
 
-// exception handler
-__attribute__((noreturn))
-extern "C" void exception_handler(void);
+typedef struct {
+    uint32_t ds;                                     // Data segment selector
+    uint32_t edi, esi, ebp, esp, ebx, edx, ecx, eax; // Pushed by pusha.
+    uint32_t int_no, err_code;                       // Interrupt number and error code (if applicable)
+    uint32_t eip, cs, eflags, useresp, ss;           // Pushed by the processor automatically.
+} registers_t;
 
-// interrupt handler
-__attribute__((noreturn))
-void int_handeler(void);
+// Typedef for interrupt handler
+typedef void (*isr_t)(registers_t);
+
+// Register an interrupt handler
+void register_interrupt_handler(uint8_t n, isr_t handler);
+
+// Main interrupt handler called from assembly
+extern "C" void isr_handler(registers_t regs);
+extern "C" void irq_handler(registers_t regs);
 
 /// @brief this function will initialise the idt descriptor
 /// @param kernel_code_seg the adress of the code segement
