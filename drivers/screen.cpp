@@ -31,7 +31,18 @@ void print_char(char attribute, int col, int row , char character){
     }
 
     if(character=='\n'){
-        set_cursor(offset+(MAX_COL-offset));
+        set_cursor(offset+MAX_COL-offset);
+    }
+    else if(character=='\t'){
+        set_cursor(offset+4);
+    }
+    else if(character=='\b'){
+        if (offset > 0) { // Don't delete if at start of screen
+            offset -= 2;  // Move back one character (2 bytes)
+            video_address[offset] = ' ';       // Erase character
+            video_address[offset + 1] = attribute; // Reset attribute
+            set_cursor(offset); // Update cursor
+        }
     }
     else{
         video_address[offset] = character;
