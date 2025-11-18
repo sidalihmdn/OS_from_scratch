@@ -4,8 +4,8 @@ HEADERS = $(wildcard io_functions/*.h drivers/*.h */*.h kernel/*.h)
 OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES))
 
 # Change this if your cross-compiler is somewhere else
-CC =i386-elf-gcc
-GDB =i386-elf-gdb
+CC =i686-elf-gcc
+GDB =i686-elf-gdb
 # -g: Use debugging symbols in gcc
 CFLAGS = -g
 
@@ -16,11 +16,11 @@ os.bin: boot/boot.bin kernel.bin
 # '--oformat binary' deletes all symbols as a collateral, so we don't need
 # to 'strip' them manually on this case
 kernel.bin: boot/kernel_entry.o int/int_asm.o ${OBJ} 
-	i386-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
+	i686-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
 
 # Used for debugging purposes
 kernel.elf: boot/kernel_entry.o ${OBJ}
-	i386-elf-ld -o $@ -Ttext 0x1000 $^ 
+	i686-elf-ld -o $@ -Ttext 0x1000 $^ 
 
 run: os.bin
 	qemu-system-i386 -fda os.bin
@@ -42,5 +42,4 @@ debug: os.bin kernel.elf
 	nasm $< -f bin -o $@
 
 clean:
-	rm -rf *.bin *.dis *.o os.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o
+	rm -rf */*.o */*.o */*/*.o *.bin *.os *.elf *.o
