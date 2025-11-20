@@ -30,6 +30,10 @@ const char scancode_to_ascii[128] = {
     0, // All other keys undefined
 };
 
+static char key_buffer[256];
+static int buffer_pos = 0;
+static bool line_ready = false;
+
 void init_keyboard(void) {
     // Clear keyboard buffer
     while (inb(KEYBOARD_STATUS_PORT) & 0x01) {
@@ -40,6 +44,23 @@ void init_keyboard(void) {
     unsigned char mask = inb(PIC1_DATA);
     mask &= ~(1 << 1); // Clear bit 1 (IRQ1)
     outb(PIC1_DATA, mask);
+    
+    buffer_pos = 0;
+    line_ready = false;
+}
+
+bool get_input_buffer(char* buffer, int max_size) {
+    if (!line_ready) return false;
+    
+    int i;
+    for (i = 0; i < buffer_pos && i < max_size - 1; i++) {
+        buffer[i] = key_buffer[i];
+    }
+    buffer[i] = 0;
+    
+    buffer_pos = 0;
+    line_ready = false;
+    return true;
 }
 
 extern "C" void keyboard_handler(void) {
@@ -49,10 +70,22 @@ extern "C" void keyboard_handler(void) {
     if (!(scancode & 0x80)) {
         char ascii = scancode_to_ascii[scancode];
         
-        if (ascii != 0) {
-            // Print the character
-            char str[2] = {ascii, '\0'};
-            print_string(str, 1);
+        if (ascii == '\n') { // Enter
+            print_string((char*)"\n", 1);
+            line_ready = true;
+        } else if (ascii == '\b') { // Backspace
+            if (buffer_pos > 0) {
+                buffer_pos--;
+                print_char(0, -1, -1, '\b'); // Move cursor back
+                print_char(0, -1, -1, ' ');  // Erase char
+                print_char(0, -1, -1, '\b'); // Move cursor back again
+            }
+        } else if (ascii != 0) {
+            if (buffer_pos < 255 && !line_ready) {
+                key_buffer[buffer_pos++] = ascii;
+                char str[2] = {ascii, '\0'};
+                print_string(str, 1);
+            }
         }
     }
     

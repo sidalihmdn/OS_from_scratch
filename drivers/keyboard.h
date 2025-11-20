@@ -11,4 +11,8 @@ void init_keyboard(void);
 /// @brief Keyboard interrupt handler
 extern "C" void keyboard_handler(void);
 
+// Returns true if a full line (Enter pressed) is available in the buffer
+// Copies the line to the provided buffer and clears the internal buffer
+bool get_input_buffer(char* buffer, int max_size);
+
 #endif // KEYBOARD_H
