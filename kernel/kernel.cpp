@@ -10,14 +10,36 @@
 
 void main(){
     clean_screen();
+    print_string((char *)"Welcome to OS from Scratch!\n", 28);
+    print_string((char *)"Type 'help' for commands.\n", 26);
     print_string((char *)"os > ", 5);
-    //print_string(int2String(1234),4);
+    
     set_idt();
-    //int a = 12/0;
-    //PIC_remap(32,40);
     init_keyboard();
-    for(;;){}
-    //print_char(0, -1 , -1 , '0'+ len((char *)"les"));
+    
+    char buffer[256];
+    
+    for(;;){
+        if (get_input_buffer(buffer, 256)) {
+            if (strcmp(buffer, (char*)"help") == 0) {
+                print_string((char*)"Available commands:\n", 20);
+                print_string((char*)"  help  - Show this help\n", 25);
+                print_string((char*)"  clear - Clear screen\n", 23);
+                print_string((char*)"  echo  - Echo text\n", 20);
+                print("blabla\n");
+            } else if (strcmp(buffer, (char*)"clear") == 0) {
+                clean_screen();
+            } else if (buffer[0] == 'e' && buffer[1] == 'c' && buffer[2] == 'h' && buffer[3] == 'o' && buffer[4] == ' ') {
+                print_string(buffer + 5, len(buffer + 5));
+                print_string((char*)"\n", 1);
+            } else if (len(buffer) > 0) {
+                print_string((char*)"Unknown command: ", 17);
+                print_string(buffer, len(buffer));
+                print_string((char*)"\n", 1);
+            }
+            
+            print_string((char *)"os > ", 5);
+        }
+    }
     return;
-
 }
