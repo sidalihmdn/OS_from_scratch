@@ -22,16 +22,21 @@ void print_char(char attribute, int col, int row , char character){
         attribute = WHITE_ON_BLACK;
     }
 
-    int offset;
+    int offset = 0;
     if (col >= 0 && row >= 0){
         offset = get_offset(col,row);
     }
     else{
-        offset =get_cursor();
+        offset = get_cursor();
     }
 
     if(character=='\n'){
-        set_cursor(offset+MAX_COL-offset);
+        offset = get_cursor();
+        int row = 0;
+        int col = 0;
+        parse_offset(col,row,offset);
+        offset = get_offset(0,row+1);
+        set_cursor(offset);
     }
     else if(character=='\t'){
         set_cursor(offset+4);
@@ -52,7 +57,7 @@ void print_char(char attribute, int col, int row , char character){
     }
 }
 
-void print_string(char string[], int len){
+void print_string(const char string[], int len){
     int offset, col, row;
     for(int i=0 ; i < len ; i++){
         //offset = get_cursor();

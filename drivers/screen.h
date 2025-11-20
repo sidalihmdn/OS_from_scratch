@@ -11,4 +11,4 @@
 
 void clean_screen();
 void print_char(char attribute, int col, int row , char character);
-void print_string(char string[], int len);
+void print_string(const char string[], int len);
