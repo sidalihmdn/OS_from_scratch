@@ -1,45 +1,49 @@
-C_SOURCES = $(wildcard io_functions/*.cpp drivers/*.cpp */*.cpp kernel/*.cpp)
-HEADERS = $(wildcard io_functions/*.h drivers/*.h */*.h kernel/*.h)
-# Nice syntax for file extension replacement
-OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES))
+CXX = i686-elf-g++
+CC  = i686-elf-gcc
+GDB = i686-elf-gdb
 
-# Change this if your cross-compiler is somewhere else
-CC =i686-elf-gcc
-GDB =i686-elf-gdb
-# -g: Use debugging symbols in gcc
-CFLAGS = -g
+CFLAGS   = -g -ffreestanding -O2 -Wall -Wextra
+CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
-# First rule is run by default
-os.bin: boot/boot.bin kernel.bin
-	cat $^ > os.bin
+C_SOURCES = $(wildcard drivers/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp)
+ASM_SOURCES = $(wildcard cpu/*.asm)
 
-# '--oformat binary' deletes all symbols as a collateral, so we don't need
-# to 'strip' them manually on this case
-kernel.bin: boot/kernel_entry.o int/int_asm.o ${OBJ} 
+HEADERS = $(wildcard includes/*.h includes/*/*.h)
+
+OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES)) $(patsubst %.asm,%.o,$(ASM_SOURCES))
+
+# Kernel binary
+bin/kernel.bin: $(OBJ)
 	i686-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
 
-# Used for debugging purposes
-kernel.elf: boot/kernel_entry.o ${OBJ}
-	i686-elf-ld -o $@ -Ttext 0x1000 $^ 
+# ELF version for debugging
+bin/kernel.elf: $(OBJ)
+	i686-elf-ld -o $@ -Ttext 0x1000 $^
 
-run: os.bin
-	qemu-system-i386 -fda os.bin
+# Boot image
+bin/os.bin: bin/boot.bin bin/kernel.bin
+	cat $^ > $@
+bin/boot.bin: boot/boot.asm
+	nasm $< -f bin -o $@
 
-# Open the connection to qemu and load our kernel-object file with symbols
-debug: os.bin kernel.elf
-	qemu-system-i386 -s -fda os.bin &
-	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+# Compile C++
+%.o: %.cpp $(HEADERS)
+	$(CC) $(CXXFLAGS) -c $< -o $@
 
-# Generic rules for wildcards
-# To make an object, always compile from its .c
-%.o: %.cpp ${HEADERS}
-	${CC} ${CFLAGS} -ffreestanding -c $< -o $@
+# Compile C
+%.o: %.c $(HEADERS)
+	$(CC) $(CFLAGS) -c $< -o $@
 
+# Assemble .asm → .o (ELF)
 %.o: %.asm
 	nasm $< -f elf -o $@
 
-%.bin: %.asm
-	nasm $< -f bin -o $@
+run: bin/os.bin
+	qemu-system-i386 -fda bin/os.bin
+
+debug: bin/os.bin bin/kernel.elf
+	qemu-system-i386 -s -fda bin/os.bin &
+	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file bin/kernel.elf"
 
 clean:
-	rm -rf */*.o */*.o */*/*.o *.bin *.os *.elf *.o
+	rm -rf $(OBJ) bin/*.bin bin/*.elf bin/os.bin

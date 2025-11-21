@@ -1,7 +1,7 @@
-#include "keyboard.h"
-#include "../io_functions/low_level.h"
-#include "../drivers/screen.h"
-#include "../int/pic.h"
+#include "../includes/drivers/keyboard.h"
+#include "../includes/cpu/ports.h"
+#include "../includes/drivers/screen.h"
+#include "../includes/cpu/pic.h"
 
 // Simple US keyboard layout (scancode set 1)
 const char scancode_to_ascii[128] = {

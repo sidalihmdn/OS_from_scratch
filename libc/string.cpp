@@ -1,5 +1,5 @@
-#include "string.h"
-#include "../drivers/screen.h"
+#include "../includes/libc/string.h"
+#include "../includes/drivers/screen.h"
 
 /// @brief this function will return the lenght of a given string
 /// @param c the address of the first character of the string

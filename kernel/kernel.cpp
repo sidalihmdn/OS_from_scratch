@@ -1,8 +1,8 @@
-#include "../drivers/screen.h"
-#include "../includes/string.h"
-#include "../int/int.h"
-#include "../int/pic.h"
-#include "../drivers/keyboard.h"
+#include "../includes/drivers/screen.h"
+#include "../includes/libc/string.h"
+#include "../includes/cpu/int.h"
+#include "../includes/cpu/pic.h"
+#include "../includes/drivers/keyboard.h"
 
 #if DEBUG
 //some debug code
