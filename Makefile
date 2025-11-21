@@ -40,10 +40,11 @@ bin/boot.bin: boot/boot.asm
 
 run: bin/os.bin
 	qemu-system-i386 -fda bin/os.bin
+	make clean
 
 debug: bin/os.bin bin/kernel.elf
 	qemu-system-i386 -s -fda bin/os.bin &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file bin/kernel.elf"
 
 clean:
-	rm -rf $(OBJ) bin/*.bin bin/*.elf bin/os.bin
+	rm -rf $(OBJ) bin/*.bin bin/*.elf 
