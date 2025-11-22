@@ -13,5 +13,12 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: make
+
+    - name: Install requirements
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y nasm
+        sudo apt-get install -y qemu-system-i386
+
+    - name: Build OS
       run: make bin/os.bin
