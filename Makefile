@@ -13,12 +13,17 @@ HEADERS = $(wildcard includes/*.h includes/*/*.h)
 OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES)) $(patsubst %.asm,%.o,$(ASM_SOURCES))
 
 # Kernel binary
-bin/kernel.bin: $(OBJ)
-	i686-elf-ld -o $@ -Ttext 0x1000 $^ --oformat binary
+bin/kernel.bin: bin/kernel.elf
+	i686-elf-objcopy -O binary $< $@
 
 # ELF version for debugging
-bin/kernel.elf: $(OBJ)
-	i686-elf-ld -o $@ -Ttext 0x1000 $^
+bin/kernel.elf: $(OBJ) bin/kernel_entry.o
+	i686-elf-ld -o $@ -T linker.ld \
+	bin/kernel_entry.o \
+	$(filter-out bin/kernel_entry.o,$^)
+
+bin/kernel_entry.o: kernel/kernel_entry.asm
+	nasm $< -f elf -o $@
 
 # Boot image
 bin/os.bin: bin/boot.bin bin/kernel.bin
