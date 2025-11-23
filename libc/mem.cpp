@@ -18,10 +18,11 @@ void init_mem(){
     heap_start_addr = (uint32_t)&heap_start;
     heap_end_addr = (uint32_t)&heap_end;
 
+    bitmap = (uint8_t*)heap_start_addr;
+    bitmap_size = total_blocks / 8;
+    heap_start_addr += bitmap_size;
     uint32_t total_heap_size = heap_end_addr - heap_start_addr;
     total_blocks = total_heap_size / BLOCK_SIZE;
-    bitmap_size = total_blocks / 8;
-    bitmap = (uint8_t*)heap_start_addr;
     heap_data_start = (uint8_t*)(heap_start_addr + bitmap_size);
     memset(bitmap, 0, bitmap_size);
 }

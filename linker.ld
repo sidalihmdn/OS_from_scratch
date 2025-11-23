@@ -19,6 +19,6 @@ SECTIONS
     kernel_end = .;       /* symbol marking end of kernel */
 
     heap_start = .;       /* heap starts here */
-    . = . + 1M;           /* reserve 1 MB for heap */
+    . = . + 50M;           /* reserve 50 MB for heap */
     heap_end = .;         /* heap ends here */
 }

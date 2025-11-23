@@ -35,6 +35,19 @@ void test_memory() {
     
     // Test malloc/free
     char* p1 = (char*)malloc(10);
+    char* p2 = (char*)malloc(10);
+    char* p3 = (char*)malloc(10);
+
+    memcpy(p1, "Hello", 5);
+    memcpy(p2, "World", 5);
+    memcpy(p3, "!", 1);
+    
+    if (strcmp(p1, "Hello") == 0 && strcmp(p2, "World") == 0 && strcmp(p3, "!") == 0) {
+        print((char*)"  malloc: OK\n");
+    } else {
+        print((char*)"  malloc: FAIL\n");
+    }
+
     if (p1 != 0) {
         print((char*)"  malloc: OK\n");
         free(p1);
