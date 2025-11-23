@@ -40,15 +40,15 @@ void init_mem(){
 
 // Helper to manipulate bitmap
 static void set_bit(uint32_t bit) {
-    bitmap[bit] = 1;
+    bitmap[bit/8] |= (1 << (bit % 8));
 }
 
 static void clear_bit(uint32_t bit) {
-    bitmap[bit] = 0;
+    bitmap[bit/8] &= ~(1 << (bit % 8));
 }
 
 static bool get_bit(uint32_t bit) {
-    return bitmap[bit];
+    return bitmap[bit/8] & (1 << (bit % 8));
 }
 
 // Allocate memory of a given size
@@ -59,9 +59,11 @@ void* malloc(uint32_t size){
     // 3. Mark blocks as used
     // 4. Return pointer
     uint32_t blocks_needed = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-    return 0;
+    void* ptr = scan_bitmap(blocks_needed);
+    
+    return ptr;
 }
+
 
 void* scan_bitmap(uint32_t blocks_needed){
     uint32_t free_streak = 0;
@@ -87,6 +89,7 @@ void* scan_bitmap(uint32_t blocks_needed){
                     break;
                 }
                 if (free_streak == blocks_needed){
+                    set_bits(start_block, start_block+blocks_needed);
                     return (void*)(heap_data_start + start_block*BLOCK_SIZE);
                 }
             }
@@ -94,6 +97,13 @@ void* scan_bitmap(uint32_t blocks_needed){
     }
     return 0;
 }
+
+void set_bits(uint32_t start, uint32_t end){
+    for (uint32_t i = start; i < end; i++){
+        set_bit(i);
+    }
+}
+    
 
 // Free allocated memory
 void free(void* ptr){
