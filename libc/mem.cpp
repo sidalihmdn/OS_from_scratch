@@ -15,27 +15,45 @@ static uint8_t* heap_data_start; // Pointer to where actual data storage begins 
 
 // Initialize the memory manager
 void init_mem(){
-    // Get the addresses from the linker symbols
     heap_start_addr = (uint32_t)&heap_start;
     heap_end_addr = (uint32_t)&heap_end;
 
-    // Calculate total size of the heap
     uint32_t total_heap_size = heap_end_addr - heap_start_addr;
-    
-    // Calculate how many blocks fit in the heap
     total_blocks = total_heap_size / BLOCK_SIZE;
-    
-    // Calculate size of the bitmap needed (1 bit per block -> 8 blocks per byte)
     bitmap_size = total_blocks / 8;
-    
-    // Place the bitmap at the very beginning of the heap
     bitmap = (uint8_t*)heap_start_addr;
-    
-    // The actual data area starts right after the bitmap
     heap_data_start = (uint8_t*)(heap_start_addr + bitmap_size);
-    
-    // Clear the bitmap (set all bits to 0, meaning all blocks are free)
     memset(bitmap, 0, bitmap_size);
+}
+// Allocate memory of a given size
+void* malloc(uint32_t size){
+    // TODO: Implement allocation logic
+    // 1. Calculate blocks needed
+    // 2. Scan bitmap for free blocks
+    // 3. Mark blocks as used
+    // 4. Return pointer
+    uint32_t blocks_needed = (size + sizeof(uint32_t) + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    uint32_t start_block = scan_bitmap(blocks_needed);
+    if (start_block == -1){
+        return nullptr;
+    }
+    set_bits(start_block, start_block + blocks_needed);
+    uint32_t* start_block_ptr = (uint32_t*)(heap_data_start + start_block*BLOCK_SIZE);
+    reserve_memory(blocks_needed, start_block_ptr);
+    
+    return start_block_ptr + 1;
+}
+
+// Free allocated memory
+void free(void* ptr){
+    // TODO: Implement deallocation logic
+    // 1. Calculate block index from ptr
+    // 2. Clear bits in bitmap
+    uint32_t* header_ptr = (uint32_t*)ptr - 1;
+    uint32_t blocks_nb = *header_ptr;
+    memset(header_ptr, 0, blocks_nb * BLOCK_SIZE);
+    uint32_t start_block = ((uint32_t)header_ptr - (uint32_t)heap_start_addr) / BLOCK_SIZE;
+    clear_bits(start_block, start_block + blocks_nb);
 }
 
 // Helper to manipulate bitmap
@@ -51,21 +69,8 @@ static bool get_bit(uint32_t bit) {
     return bitmap[bit/8] & (1 << (bit % 8));
 }
 
-// Allocate memory of a given size
-void* malloc(uint32_t size){
-    // TODO: Implement allocation logic
-    // 1. Calculate blocks needed
-    // 2. Scan bitmap for free blocks
-    // 3. Mark blocks as used
-    // 4. Return pointer
-    uint32_t blocks_needed = (size + BLOCK_SIZE - 1) / BLOCK_SIZE;
-    void* ptr = scan_bitmap(blocks_needed);
-    
-    return ptr;
-}
 
-
-void* scan_bitmap(uint32_t blocks_needed){
+uint32_t scan_bitmap(uint32_t blocks_needed){
     uint32_t free_streak = 0;
     uint32_t start_block = 0;
 
@@ -75,7 +80,6 @@ void* scan_bitmap(uint32_t blocks_needed){
         }
         if (!get_bit(i)){
             start_block = i;
-            free_streak = 1;
             for (uint32_t j = i; j < blocks_needed+i; j++){
                 if (j >= total_blocks){
                     break; // reached the end of the heap
@@ -89,13 +93,12 @@ void* scan_bitmap(uint32_t blocks_needed){
                     break;
                 }
                 if (free_streak == blocks_needed){
-                    set_bits(start_block, start_block+blocks_needed);
-                    return (void*)(heap_data_start + start_block*BLOCK_SIZE);
+                    return start_block;
                 }
             }
         }
     }
-    return 0;
+    return -1;
 }
 
 void set_bits(uint32_t start, uint32_t end){
@@ -103,13 +106,16 @@ void set_bits(uint32_t start, uint32_t end){
         set_bit(i);
     }
 }
-    
 
-// Free allocated memory
-void free(void* ptr){
-    // TODO: Implement deallocation logic
-    // 1. Calculate block index from ptr
-    // 2. Clear bits in bitmap
+void clear_bits(uint32_t start, uint32_t end){
+    for (uint32_t i = start; i < end; i++){
+        clear_bit(i);
+    }
+}
+
+void reserve_memory(uint32_t blocks_needed, uint32_t* start_block){
+    *start_block = blocks_needed;
+    memset(start_block + 1, 0, blocks_needed * BLOCK_SIZE);
 }
 
 // Fill memory with a constant byte value
