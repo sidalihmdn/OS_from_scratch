@@ -3,6 +3,8 @@
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
+#include "../includes/libc/mem.h"
+#include "../tests/libc_test.h"
 
 #if DEBUG
 //some debug code
@@ -16,6 +18,14 @@ void main(){
     
     set_idt();
     init_keyboard();
+    init_mem();
+
+    // TODO : not working to fix
+    print_bitmap();
+    char* p = (char*)malloc(100);
+    print_bitmap();
+    free(p);
+    print_bitmap();
     
     char buffer[256];
     
