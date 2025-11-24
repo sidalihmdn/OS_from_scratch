@@ -11,21 +11,22 @@
 #endif
 
 void main(){
+    set_idt();
+    init_exceptions();
+    init_keyboard();
+    init_mem();
     clean_screen();
     print_string((char *)"Welcome to OS from Scratch!\n", 28);
     print_string((char *)"Type 'help' for commands.\n", 26);
     print_string((char *)"os > ", 5);
-    
-    set_idt();
-    init_keyboard();
-    init_mem();
 
-    // TODO : not working to fix
-    print_bitmap();
-    char* p = (char*)malloc(100);
-    print_bitmap();
-    free(p);
-    print_bitmap();
+    // Test Divide By Zero Exception
+    int a = 10;
+    int b = 0;
+    int c = a / b;
+    print(int2String(c));
+
+
     
     char buffer[256];
     
