@@ -12,6 +12,7 @@
  void set_bits(uint32_t start, uint32_t end);
  void clear_bits(uint32_t start, uint32_t end);
  void reserve_memory(uint32_t blocks, uint32_t* start_block_ptr);
+ void print_bitmap();
 
  void* memset(void* ptr, int value, uint32_t num);
  void* memcpy(void* dest, const void* src, uint32_t num);

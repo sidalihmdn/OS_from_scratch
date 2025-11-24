@@ -19,8 +19,13 @@ void main(){
     set_idt();
     init_keyboard();
     init_mem();
-    
-    run_libc_tests();
+
+    // TODO : not working to fix
+    print_bitmap();
+    char* p = (char*)malloc(100);
+    print_bitmap();
+    free(p);
+    print_bitmap();
     
     char buffer[256];
     

@@ -35,8 +35,17 @@ void test_memory() {
     
     // Test malloc/free
     char* p1 = (char*)malloc(10);
+    print_bitmap();
     char* p2 = (char*)malloc(10);
+    print_bitmap();
     char* p3 = (char*)malloc(10);
+    print_bitmap();
+    free(p1);
+    print_bitmap();
+    free(p2);
+    print_bitmap();
+    free(p3);
+    print_bitmap();
 
     memcpy(p1, "Hello", 5);
     memcpy(p2, "World", 5);

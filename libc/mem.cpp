@@ -1,38 +1,30 @@
 #include "../includes/libc/mem.h"
+#include "../includes/libc/string.h"
 
 // External symbols defined in the linker script (linker.ld)
-// These mark the physical start and end of the heap memory area.
 extern uint32_t heap_start;
 extern uint32_t heap_end;
 
 // Static variables to track heap state
-static uint32_t heap_start_addr; // Physical address where heap starts
-static uint32_t heap_end_addr;   // Physical address where heap ends
-static uint32_t total_blocks;    // Total number of available memory blocks
-static uint32_t bitmap_size;     // Size of the bitmap in bytes
-static uint8_t* bitmap;          // Pointer to the start of the bitmap
-static uint8_t* heap_data_start; // Pointer to where actual data storage begins (after bitmap)
+static uint32_t heap_start_addr; 
+static uint32_t heap_end_addr;   
+static uint32_t total_blocks;    
+static uint32_t bitmap_size;     
+static uint8_t* bitmap;          
+static uint8_t* heap_data_start; 
 
 // Initialize the memory manager
 void init_mem(){
     heap_start_addr = (uint32_t)&heap_start;
     heap_end_addr = (uint32_t)&heap_end;
 
+    total_blocks = (heap_end_addr - (uint32_t)heap_data_start)/BLOCK_SIZE;
+    bitmap_size = (total_blocks + 7) / 8;
     bitmap = (uint8_t*)heap_start_addr;
-    bitmap_size = total_blocks / 8;
-    heap_start_addr += bitmap_size;
-    uint32_t total_heap_size = heap_end_addr - heap_start_addr;
-    total_blocks = total_heap_size / BLOCK_SIZE;
     heap_data_start = (uint8_t*)(heap_start_addr + bitmap_size);
     memset(bitmap, 0, bitmap_size);
 }
-// Allocate memory of a given size
 void* malloc(uint32_t size){
-    // TODO: Implement allocation logic
-    // 1. Calculate blocks needed
-    // 2. Scan bitmap for free blocks
-    // 3. Mark blocks as used
-    // 4. Return pointer
     uint32_t blocks_needed = (size + sizeof(uint32_t) + BLOCK_SIZE - 1) / BLOCK_SIZE;
     uint32_t start_block = scan_bitmap(blocks_needed);
     if (start_block == -1){
@@ -45,19 +37,14 @@ void* malloc(uint32_t size){
     return start_block_ptr + 1;
 }
 
-// Free allocated memory
 void free(void* ptr){
-    // TODO: Implement deallocation logic
-    // 1. Calculate block index from ptr
-    // 2. Clear bits in bitmap
     uint32_t* header_ptr = (uint32_t*)ptr - 1;
     uint32_t blocks_nb = *header_ptr;
     memset(header_ptr, 0, blocks_nb * BLOCK_SIZE);
-    uint32_t start_block = ((uint32_t)header_ptr - (uint32_t)heap_start_addr) / BLOCK_SIZE;
+    uint32_t start_block = ((uint32_t)header_ptr - (uint32_t)heap_data_start) / BLOCK_SIZE;
     clear_bits(start_block, start_block + blocks_nb);
 }
 
-// Helper to manipulate bitmap
 static void set_bit(uint32_t bit) {
     bitmap[bit/8] |= (1 << (bit % 8));
 }
@@ -138,19 +125,17 @@ void* memcpy(void* dest, const void* src, uint32_t size){
     return dest;
 }
 
-// Move memory area (handles overlapping regions)
+// not working
 void* memmove(void* dest, const void* src, uint32_t size){
     uint8_t* p = (uint8_t*)dest;
     const uint8_t* q = (const uint8_t*)src;
-    // Note: This implementation is identical to memcpy and doesn't handle overlap correctly yet.
-    // To handle overlap, we should copy backwards if dest > src.
     for (uint32_t i = 0; i < size; i++) {
         p[i] = q[i];
     }
     return dest;
 }
 
-// Locate character in block of memory
+
 void* memchr(const void* ptr, int value, uint32_t size){
     uint8_t* p = (uint8_t*)ptr;
     for (uint32_t i = 0; i < size; i++) {
@@ -158,11 +143,10 @@ void* memchr(const void* ptr, int value, uint32_t size){
             return (void*)(p + i);
         }
     }
-    return 0; // NULL
+    return 0; 
 }
 
-// Compare two blocks of memory
-// Returns pointer to first mismatch or NULL if equal (Non-standard return type)
+// compare memory
 void* memcmp(const void* ptr1, const void* ptr2, uint32_t size){
     const uint8_t* p = (const uint8_t*)ptr1;
     const uint8_t* q = (const uint8_t*)ptr2;
@@ -171,6 +155,19 @@ void* memcmp(const void* ptr1, const void* ptr2, uint32_t size){
             return (void*)(p + i);
         }
     }
-    return 0; // NULL
+    return 0; 
+}
+
+// print bitmap
+void print_bitmap(){
+    print("\n Bitmap: \n");
+    for (uint32_t i = 0; i < 50; i++){
+        if (get_bit(i)){
+           print("X");
+        }
+        else{
+            print(".");
+        }
+    }
 }
 
