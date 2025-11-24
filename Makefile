@@ -29,6 +29,7 @@ bin/kernel_entry.o: kernel/kernel_entry.asm
 bin/os.bin: bin/boot.bin bin/kernel.bin
 	cat $^ > $@
 bin/boot.bin: boot/boot.asm
+	mkdir -p bin
 	nasm $< -f bin -o $@
 
 # Compile C++
