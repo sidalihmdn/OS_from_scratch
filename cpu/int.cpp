@@ -3,6 +3,7 @@
 #include "../includes/cpu/ports.h"
 #include "../includes/drivers/screen.h"
 #include "../includes/drivers/keyboard.h"
+#include "../includes/libc/string.h"
 
 #define IDT_SIZE 256
 
@@ -82,4 +83,34 @@ extern "C" void irq_handler(registers_t regs) {
     if (regs.int_no == 33) {
         keyboard_handler();
     }
+}
+
+extern "C" void exception_handler(registers_t regs, const char* msg){
+    print("Exception - interrupt number : ");
+    print(int2String(regs.int_no));
+    print("\n");
+    print("Exception - error code : ");
+    print(int2String(regs.err_code));
+    print("\n");
+    print(msg);
+    print("\n");
+    for(;;);   
+}
+
+void isr0_handler(registers_t regs){
+    exception_handler(regs, "Divide By Zero");
+}
+
+void isr13_handler(registers_t regs){
+    exception_handler(regs, "General Protection Fault");
+}
+
+void isr14_handler(registers_t regs){
+    exception_handler(regs, "Page Fault");
+}
+
+void init_exceptions(){
+    register_interrupt_handler(0, isr0_handler);
+    register_interrupt_handler(13, isr13_handler);
+    register_interrupt_handler(14, isr14_handler);
 }

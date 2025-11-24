@@ -56,4 +56,6 @@ void init_idt_desc(void *isr , uint8_t attribute, uint8_t entry);
 
 void set_idt(void);
 
+void init_exceptions();
+
 #endif // !INT_H
