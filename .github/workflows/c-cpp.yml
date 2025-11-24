@@ -21,4 +21,4 @@ jobs:
         sudo apt-get install -y qemu-system-i386
 
     - name: Build OS
-      run: make bin/os.bin
+      run: make run
