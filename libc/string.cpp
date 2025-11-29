@@ -61,8 +61,19 @@ char *int2String(int a){
 }
 
 
-char *hex2char(char hex){
-    return 0;
+char* ptr_to_hex(uint32_t ptr, char* buffer) {
+    const char* hex = "0123456789ABCDEF";
+
+    buffer[0] = '0';
+    buffer[1] = 'x';
+
+    for (int i = 0; i < 8; i++) {
+        uint32_t shift = (7 - i) * 4;
+        buffer[2 + i] = hex[(ptr >> shift) & 0xF];
+    }
+
+    buffer[10] = '\0';
+    return buffer;
 }
 
 int strcmp(char* s1, char* s2) {
