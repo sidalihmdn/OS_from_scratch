@@ -3,7 +3,8 @@
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
-#include "../includes/libc/mem.h"
+#include "../includes/libc/mem.h" 
+#include "../includes/kernel/mem/pmm.h"
 #include "../tests/libc_test.h"
 
 #if DEBUG
@@ -15,19 +16,12 @@ void main(){
     init_exceptions();
     init_keyboard();
     init_mem();
+    init_pmm();
     clean_screen();
     print_string((char *)"Welcome to OS from Scratch!\n", 28);
     print_string((char *)"Type 'help' for commands.\n", 26);
     print_string((char *)"os > ", 5);
 
-    // Test Divide By Zero Exception
-    int a = 10;
-    int b = 0;
-    int c = a / b;
-    print(int2String(c));
-
-
-    
     char buffer[256];
     
     for(;;){
