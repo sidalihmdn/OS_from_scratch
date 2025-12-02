@@ -3,7 +3,7 @@
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
-#include "../includes/libc/mem.h" 
+#include "../includes/kernel/mem/mem.h" 
 #include "../includes/kernel/mem/pmm.h"
 #include "../tests/libc_test.h"
 
@@ -11,17 +11,17 @@
 //some debug code
 #endif
 
-void main(){
+int main(){
     set_idt();
     init_exceptions();
     init_keyboard();
-    init_mem();
     init_pmm();
+
     clean_screen();
     print_string((char *)"Welcome to OS from Scratch!\n", 28);
     print_string((char *)"Type 'help' for commands.\n", 26);
     print_string((char *)"os > ", 5);
-
+    
     char buffer[256];
     
     for(;;){
@@ -46,5 +46,5 @@ void main(){
             print_string((char *)"os > ", 5);
         }
     }
-    return;
+    return 0;
 }

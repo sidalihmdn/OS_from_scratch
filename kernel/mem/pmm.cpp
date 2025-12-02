@@ -1,6 +1,6 @@
 #include "../../includes/kernel/mem/pmm.h"
 #include "../../includes/libc/string.h"
-#include "../../includes/libc/mem.h"
+#include "../../includes/kernel/mem/mem.h"
 
 #define PAGE_SIZE 4096
 
@@ -52,7 +52,6 @@ typedef struct {
 } __attribute__((packed)) page_directory_entry;
 
 void init_pmm(){
-
     for(uint32_t i = 0; i < 1024; i++){
         // page_table[i].present = 1;
         // page_table[i].rw = 1;
@@ -66,8 +65,9 @@ void init_pmm(){
     page_directory[0] = ((uint32_t)page_table) | 3;
 
     for (uint32_t i = 1; i < 1024; i++){
-        page_directory[i] = 0 | 2;
+        page_directory[i] = 2; // rw = 1 ; present = 0
     }
     load_page_directory(page_directory);
     enable_paging();
 }
+    

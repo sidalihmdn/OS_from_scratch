@@ -1,6 +1,6 @@
 #include "libc_test.h"
 #include "../includes/libc/string.h"
-#include "../includes/libc/mem.h"
+#include "../includes/kernel/mem/mem.h"
 #include "../includes/drivers/screen.h"
 
 void test_string() {

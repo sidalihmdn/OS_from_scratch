@@ -1,6 +1,6 @@
 CXX = i686-elf-g++
 CC  = i686-elf-gcc
-GDB = i686-elf-gdb
+GDB = i386-elf-gdb
 
 CFLAGS   = -g -ffreestanding -O2 -Wall -Wextra
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
@@ -49,8 +49,7 @@ run: bin/os.bin
 	make clean
 
 debug: bin/os.bin bin/kernel.elf
-	qemu-system-i386 -s -fda bin/os.bin &
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file bin/kernel.elf"
+	qemu-system-i386 -s -S -fda bin/os.bin
 
 clean:
-	rm -rf $(OBJ) bin/*.bin bin/*.elf 
+	rm -rf $(OBJ) bin/*.bin bin/*.elf */*.o */*.o
