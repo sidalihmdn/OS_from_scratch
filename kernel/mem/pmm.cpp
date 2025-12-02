@@ -3,25 +3,21 @@
 #include "../../includes/kernel/mem/mem.h"
 
 #define PAGE_SIZE 4096
+#define MAX_FRAMES 1024*1024
+
+#define SET_BIT(idx) (bitmap[idx/32] |= (1 << (idx % 32)))
+#define CLEAR_BIT(idx) (bitmap[idx/32] &= ~(1 << (idx % 32)))
+#define GET_BIT(idx) (bitmap[idx/32] & (1 << (idx % 32)))
 
 // assembly helper functions
 extern "C" void load_page_directory(uint32_t* page_directory);
 extern "C" void enable_paging();
 
-// External symbols defined in the linker script (linker.ld)
-extern uint32_t heap_start;
-extern uint32_t heap_end;
-
-// Static variables to track heap state
-static uint32_t heap_start_addr; 
-static uint32_t heap_end_addr;   
-static uint32_t total_pages;    
-static uint32_t bitmap_size;     
-static uint8_t* bitmap;          
-static uint8_t* heap_data_start;
-
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 uint32_t page_table[1024] __attribute__((aligned(4096)));
+
+// bitmap
+uint32_t bitmap[MAX_FRAMES/32] __attribute__((aligned(4096))); // 1 bit for every frame in physical memory
 
 typedef struct {
     uint32_t present : 1;
@@ -52,6 +48,12 @@ typedef struct {
 } __attribute__((packed)) page_directory_entry;
 
 void init_pmm(){
+    memset(bitmap, 0, sizeof(bitmap)); // clear the bitmap ; all frames are free
+
+    // marking the first 1MB of memory as used
+    for(uint32_t i = 0; i < 256; i++){
+        SET_BIT(i);
+    }
     for(uint32_t i = 0; i < 1024; i++){
         // page_table[i].present = 1;
         // page_table[i].rw = 1;
@@ -70,4 +72,33 @@ void init_pmm(){
     load_page_directory(page_directory);
     enable_paging();
 }
+
+uint32_t pmm_alloc_page(){
     
+    for (uint32_t i = 0; i < MAX_FRAMES/32; i++){ // scan the bitmap
+        if (bitmap[i] != 0xFFFFFFFF){ // if the bitmap is not full
+            for (uint32_t j = 0; j < 32; j++){
+                if(!(bitmap[i] & (1 << j))){ // if the bit is not set
+                    bitmap[i] |= (1 << j); // set the bit
+                    return (i*32 + j)*PAGE_SIZE; // return the address
+                }
+            }
+        }
+    }
+    return -1;
+}
+
+void pmm_free_page(uint32_t addr){
+    if (addr == 0 || addr >= MAX_FRAMES*PAGE_SIZE || addr % PAGE_SIZE != 0){
+        return;
+    }
+    uint32_t index = addr / PAGE_SIZE; // get the index of the frame
+    CLEAR_BIT(index); // clear the bit
+}
+
+void memset(void* ptr, int value, uint32_t size){
+    uint8_t* p = (uint8_t*)ptr;
+    for (uint32_t i = 0; i < size; i++) {
+        p[i] = value;
+    }
+}
