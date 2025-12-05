@@ -2,23 +2,33 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x1000;
+    . = 1M;
 
-    .text ALIGN(4K) :
+    .text BLOCK(4K) : ALIGN(4K)
     {
-        *(.text*)
-        *(.rodata*)
+        *(.multiboot)
+        *(.text)
     }
 
-    .data ALIGN(4K) :
+    .rodata BLOCK(4K) : ALIGN(4K)
     {
-        *(.data*)
-        *(.bss*)
+        *(.rodata)
     }
 
-    kernel_end = .;       /* symbol marking end of kernel */
+    .data BLOCK(4K) : ALIGN(4K)
+    {
+        *(.data)
+    }
 
-    heap_start = .;       /* heap starts here */
-    . = . + 1M;           /* reserve 50 MB for heap */
-    heap_end = .;         /* heap ends here */
+    .bss BLOCK(4K) : ALIGN(4K)
+    {
+        *(COMMON)
+        *(.bss)
+    }
+
+    kernel_end = .;
+
+    heap_start = .;
+    . = . + 1M;
+    heap_end = .;
 }
