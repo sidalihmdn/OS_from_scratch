@@ -8,3 +8,4 @@ char int2char(int a);
 char *int2String(int a);
 char* ptr_to_hex(uint32_t ptr, char* buffer);
 int strcmp(char* s1, char* s2);
+void printk(char* s, ...);

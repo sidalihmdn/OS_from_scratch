@@ -1,5 +1,6 @@
 #include "../includes/libc/string.h"
 #include "../includes/drivers/screen.h"
+#include <stdarg.h>
 
 /// @brief this function will return the lenght of a given string
 /// @param c the address of the first character of the string
@@ -83,4 +84,54 @@ int strcmp(char* s1, char* s2) {
     }
     return *(unsigned char*)s1 - *(unsigned char*)s2;
 }
+
+void printk(char* s, ...){
+    // printf like function
+    va_list args;
+    va_start(args, s);
+    int i = 0;
+    while (s[i] != '\0') {
+        if(s[i] == '%'){
+            i++;
+            switch (s[i]) {
+                case 'd': {
+                    char* a = int2String(va_arg(args, int));
+                    while (*a != '\0') {
+                        print_char(WHITE_ON_BLACK, -1, -1, *a);
+                        a++;
+                    }
+                    break;
+                }
+                case 'x': {
+                    char *buffer;
+                    ptr_to_hex(va_arg(args, uint32_t), buffer);
+                    while (*buffer != '\0') {
+                        print_char(WHITE_ON_BLACK, -1, -1, *buffer);
+                        buffer++;
+                    }
+                    break;
+                }
+                case 's': {
+                    char* a = va_arg(args, char*);
+                    while (*a != '\0') {
+                        print_char(WHITE_ON_BLACK, -1, -1, *a);
+                        a++;
+                    }
+                    break;
+                }
+                default: {
+                    print_char(WHITE_ON_BLACK, -1, -1, s[i]);
+                    break;
+                }
+            }
+            i++;
+        }
+        else{
+            print_char(WHITE_ON_BLACK, -1, -1, s[i]);
+            i++;
+        }
+    }
+    va_end(args);
+}
+
 

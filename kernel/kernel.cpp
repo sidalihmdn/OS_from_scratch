@@ -1,5 +1,5 @@
 #include "../includes/drivers/screen.h"
-#include "../includes/boot/multiboot.h"
+#include "../includes/boot/multiboot_helpers.h"
 #include "../includes/libc/string.h"
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
@@ -13,8 +13,13 @@
 //some debug code
 #endif
 
+#ifndef NULL
+#define NULL ((void*)0)
+#endif
+
 extern "C" void load_gdt();
 void print_memory_map(multiboot_info_t* mb_info);
+void print_mem(mmap_entry_t* entry, void* context);
 
 extern "C" void kernel_main(multiboot_info_t* mb_info){
     load_gdt();  // Load our own GDT before anything else
@@ -25,47 +30,44 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     //init_mem();
 
     clean_screen();
-    print_string((char *)"Welcome to OS from Scratch!\n", 28);
-    print_string((char *)"Type 'help' for commands.\n", 26);
-    print_string((char *)"os > ", 5);
-    PANIC("Panic test");
+    printk("Welcome to OS from Scratch!\n");
+    printk("Type 'help' for commands.\n");
+    printk("os > ");
+    print_memory_map(mb_info);
     char buffer[256];
     
     for(;;){
         if (get_input_buffer(buffer, 256)) {
             if (strcmp(buffer, (char*)"help") == 0) {
-                print_string((char*)"Available commands:\n", 20);
-                print_string((char*)"  help  - Show this help\n", 25);
-                print_string((char*)"  clear - Clear screen\n", 23);
-                print_string((char*)"  echo  - Echo text\n", 20);
-                print("blabla\n");
+                printk("Available commands:\n");
+                printk("  help  - Show this help\n");
+                printk("  clear - Clear screen\n");
+                printk("  echo  - Echo text\n");
+                printk("blabla\n");
             } else if (strcmp(buffer, (char*)"clear") == 0) {
                 clean_screen();
             } else if (buffer[0] == 'e' && buffer[1] == 'c' && buffer[2] == 'h' && buffer[3] == 'o' && buffer[4] == ' ') {
-                print_string(buffer + 5, len(buffer + 5));
-                print_string((char*)"\n", 1);
+                printk(buffer + 5);
+                printk("\n");
             } else if (len(buffer) > 0) {
-                print_string((char*)"Unknown command: ", 17);
-                print_string(buffer, len(buffer));
-                print_string((char*)"\n", 1);
+                printk("Unknown command: %s\n", buffer);
             }
             
-            print_string((char *)"os > ", 5);
+            printk("os > ");
         }
     }
 }
 
 void print_memory_map(multiboot_info_t* mb_info){
     for(mmap_entry_t* entry = (mmap_entry_t*)mb_info->mmap_addr; entry < (mmap_entry_t*)(mb_info->mmap_addr + mb_info->mmap_length); entry++){
-        print("base : ");
-        char buffer[16];
-        ptr_to_hex(entry->addr, buffer);
-        print(buffer);
-        print("\tlength : ");
-        ptr_to_hex(entry->len, buffer);
-        print(buffer);
-        print("\ttype : ");
-        print(int2String(entry->type));
-        print("\n");
+        printk("base : %s ", ptr_to_hex(entry->addr, buffer));
+        printk("\tlength : %s ", ptr_to_hex(entry->len, buffer));
+        printk("\ttype : %s\n", int2String(entry->type));
     }
+}
+
+void print_mem(mmap_entry_t* entry, void* context){
+    printk("base : %s ", ptr_to_hex(entry->addr, buffer));
+    printk("\tlength : %s ", ptr_to_hex(entry->len, buffer));
+    printk("\ttype : %s\n", int2String(entry->type));
 }
