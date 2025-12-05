@@ -7,6 +7,7 @@
 #include "../includes/kernel/mem/mem.h" 
 #include "../includes/kernel/mem/pmm.h"
 #include "../tests/libc_test.h"
+#include "../includes/kernel/panic.h"
 
 #if DEBUG
 //some debug code
@@ -27,7 +28,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     print_string((char *)"Welcome to OS from Scratch!\n", 28);
     print_string((char *)"Type 'help' for commands.\n", 26);
     print_string((char *)"os > ", 5);
-
+    PANIC("Panic test");
     char buffer[256];
     
     for(;;){

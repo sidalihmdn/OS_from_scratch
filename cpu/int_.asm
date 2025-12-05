@@ -2,6 +2,11 @@
 [extern isr_handler]
 [extern irq_handler]
 
+global cli
+cli:
+    cli
+    ret
+
 ; Common ISR code
 isr_common_stub:
     pusha               ; Pushes edi,esi,ebp,esp,ebx,edx,ecx,eax
@@ -148,3 +153,4 @@ isr_stub_table:
     dd irq_stub_13
     dd irq_stub_14
     dd irq_stub_15
+
