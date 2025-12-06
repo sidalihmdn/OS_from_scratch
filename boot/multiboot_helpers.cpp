@@ -26,7 +26,7 @@ bool multiboot_mmap_validate(multiboot_info_t* mb_info){
         return false;
     }
     if(!(mb_info->flags & 0x4)){
-        panic("multiboot_mmap_validate: mmap_addr is not valide");
+        panic("multiboot_mmap_validate: mmap_addr is not valid");
         return false;
     }
     return true;
