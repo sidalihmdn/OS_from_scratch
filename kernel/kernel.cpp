@@ -29,9 +29,6 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_keyboard();
     init_pmm(mb_info);
     
-    //init_pmm();
-    //init_mem();
-
     clean_screen();
     int a = 1;
     int b = 2;
