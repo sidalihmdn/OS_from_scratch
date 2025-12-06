@@ -62,7 +62,8 @@ char *int2String(int a){
 }
 
 
-char* ptr_to_hex(uint32_t ptr, char* buffer) {
+char* ptr_to_hex(uint32_t ptr) {
+    static char buffer[11];
     const char* hex = "0123456789ABCDEF";
 
     buffer[0] = '0';
@@ -104,7 +105,7 @@ void printk(char* s, ...){
                 }
                 case 'x': {
                     char *buffer;
-                    ptr_to_hex(va_arg(args, uint32_t), buffer);
+                    buffer = ptr_to_hex(va_arg(args, uint32_t));
                     while (*buffer != '\0') {
                         print_char(WHITE_ON_BLACK, -1, -1, *buffer);
                         buffer++;
