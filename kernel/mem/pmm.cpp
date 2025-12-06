@@ -1,6 +1,5 @@
 #include "../../includes/kernel/mem/pmm.h"
 #include "../../includes/libc/string.h"
-#include "../../includes/kernel/mem/mem.h"
 #include "../../includes/boot/multiboot_helpers.h"
 #include "../../includes/kernel/mem/pages_struct.h"
 
