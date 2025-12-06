@@ -6,6 +6,7 @@
 #include "../includes/drivers/keyboard.h"
 #include "../includes/kernel/mem/mem.h" 
 #include "../includes/kernel/mem/pmm.h"
+#include "../includes/kernel/mem/vmm.h"
 #include "../tests/libc_test.h"
 #include "../includes/kernel/panic.h"
 
@@ -26,15 +27,29 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     set_idt();
     init_exceptions();
     init_keyboard();
+    init_pmm(mb_info);
+    
     //init_pmm();
     //init_mem();
 
     clean_screen();
+    int a = 1;
+    int b = 2;
+    printk("A addr : %s\n", ptr_to_hex((uintptr_t)&a));
+    printk("B addr : %s\n", ptr_to_hex((uintptr_t)&b));
+    init_vmm();
+    int c = 3;
+    int d = 4;
+    printk("C addr : %s\n", ptr_to_hex((uintptr_t)&c));
+    printk("D addr : %s\n", ptr_to_hex((uintptr_t)&d));
+    uintptr_t virtual_address = 0xC1000000;
+    uintptr_t physical_address = get_physical_address(virtual_address);
+    printk("Virtual address : %s\n", ptr_to_hex(virtual_address));
+    printk("Physical address : %s\n", ptr_to_hex(physical_address));    
     printk("Welcome to OS from Scratch!\n");
     printk("Type 'help' for commands.\n");
     printk("os > ");
-    print_memory_map(mb_info);
-    init_pmm(mb_info);
+
     char buffer[256];
     
     for(;;){
@@ -43,17 +58,18 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
                 printk("Available commands:\n");
                 printk("  help  - Show this help\n");
                 printk("  clear - Clear screen\n");
-                printk("  echo  - Echo text\n");
-                printk("blabla\n");
+                printk("  mem   - Show memory map\n");
+                printk("  test  - Run libc tests\n");
             } else if (strcmp(buffer, (char*)"clear") == 0) {
                 clean_screen();
-            } else if (buffer[0] == 'e' && buffer[1] == 'c' && buffer[2] == 'h' && buffer[3] == 'o' && buffer[4] == ' ') {
-                printk(buffer + 5);
-                printk("\n");
-            } else if (len(buffer) > 0) {
+            } else if (strcmp(buffer, (char*)"mem") == 0) {
+                print_memory_map(mb_info);
+            }else if (strcmp(buffer, (char*)"test") == 0) {
+                run_libc_tests();
+            }else if (len(buffer) > 0) {
                 printk("Unknown command: %s\n", buffer);
             }
-            
+
             printk("os > ");
         }
     }
