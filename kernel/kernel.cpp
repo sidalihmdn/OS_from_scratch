@@ -34,6 +34,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     printk("Type 'help' for commands.\n");
     printk("os > ");
     print_memory_map(mb_info);
+    init_pmm(mb_info);
     char buffer[256];
     
     for(;;){
@@ -60,14 +61,14 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
 
 void print_memory_map(multiboot_info_t* mb_info){
     for(mmap_entry_t* entry = (mmap_entry_t*)mb_info->mmap_addr; entry < (mmap_entry_t*)(mb_info->mmap_addr + mb_info->mmap_length); entry++){
-        printk("base : %s ", ptr_to_hex(entry->addr, buffer));
-        printk("\tlength : %s ", ptr_to_hex(entry->len, buffer));
+        printk("base : %s ", ptr_to_hex(entry->addr));
+        printk("\tlength : %s ", ptr_to_hex(entry->len));
         printk("\ttype : %s\n", int2String(entry->type));
     }
 }
 
 void print_mem(mmap_entry_t* entry, void* context){
-    printk("base : %s ", ptr_to_hex(entry->addr, buffer));
-    printk("\tlength : %s ", ptr_to_hex(entry->len, buffer));
+    printk("base : %s ", ptr_to_hex(entry->addr));
+    printk("\tlength : %s ", ptr_to_hex(entry->len));
     printk("\ttype : %s\n", int2String(entry->type));
 }
