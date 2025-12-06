@@ -29,7 +29,7 @@ void reserve_region(uint64_t addr, uint64_t size);
 void init_pmm(multiboot_info_t* mb_info){
     total_memory = multiboot_get_total_memory(mb_info);
     max_frames = total_memory / PAGE_SIZE;
-    bitmap_size = (max_frames+7) / 8;
+    bitmap_size = ((max_frames + 31) / 32) * sizeof(uint32_t);
     
     mset(bitmap, 0xFF, bitmap_size); 
 
