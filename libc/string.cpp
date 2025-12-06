@@ -86,7 +86,7 @@ int strcmp(char* s1, char* s2) {
     return *(unsigned char*)s1 - *(unsigned char*)s2;
 }
 
-void printk(char* s, ...){
+void printk(const char* s, ...){
     // printf like function
     va_list args;
     va_start(args, s);
