@@ -1,36 +1,41 @@
 CXX = i686-elf-g++
 CC  = i686-elf-gcc
-GDB = i686-elf-gdb
+GDB = i386-elf-gdb
 
 CFLAGS   = -g -ffreestanding -O2 -Wall -Wextra
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
-C_SOURCES = $(wildcard drivers/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp)
-ASM_SOURCES = $(wildcard cpu/*.asm)
+C_SOURCES = $(wildcard drivers/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp kernel/*/*.cpp boot/*.cpp)
+ASM_SOURCES = $(wildcard cpu/*.asm kernel/mem/*.asm)
 
-HEADERS = $(wildcard includes/*.h includes/*/*.h)
+HEADERS = $(wildcard includes/*.h includes/*/*.h includes/*/*/*.h)
 
 OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES)) $(patsubst %.asm,%.o,$(ASM_SOURCES))
 
-# Kernel binary
-bin/kernel.bin: bin/kernel.elf
-	i686-elf-objcopy -O binary $< $@
+# Kernel ELF
+bin/kernel.elf: bin/multiboot.o $(OBJ)
+	i686-elf-ld -o $@ -T linker.ld bin/multiboot.o $(OBJ)
 
-# ELF version for debugging
-bin/kernel.elf: $(OBJ) bin/kernel_entry.o
-	i686-elf-ld -o $@ -T linker.ld \
-	bin/kernel_entry.o \
-	$(filter-out bin/kernel_entry.o,$^)
-
-bin/kernel_entry.o: kernel/kernel_entry.asm
+bin/multiboot.o: boot/multiboot.asm
+	mkdir -p bin
 	nasm $< -f elf -o $@
 
-# Boot image
-bin/os.bin: bin/boot.bin bin/kernel.bin
-	cat $^ > $@
-bin/boot.bin: boot/boot.asm
-	mkdir -p bin
-	nasm $< -f bin -o $@
+# ISO generation
+iso: bin/kernel.elf
+	mkdir -p build/iso/boot/grub
+	cp bin/kernel.elf build/iso/boot/
+	cp build/iso/boot/grub/grub.cfg build/iso/boot/grub/grub.cfg.bak 2>/dev/null || true
+	echo 'set timeout=0' > build/iso/boot/grub/grub.cfg
+	echo 'set default=0' >> build/iso/boot/grub/grub.cfg
+	echo '' >> build/iso/boot/grub/grub.cfg
+	echo 'menuentry "OS from Scratch" {' >> build/iso/boot/grub/grub.cfg
+	echo '    multiboot /boot/kernel.elf' >> build/iso/boot/grub/grub.cfg
+	echo '    boot' >> build/iso/boot/grub/grub.cfg
+	echo '}' >> build/iso/boot/grub/grub.cfg
+	i686-elf-grub-mkrescue -o os.iso build/iso
+
+run: iso
+	qemu-system-i386 -cdrom os.iso
 
 # Compile C++
 %.o: %.cpp $(HEADERS)
@@ -44,13 +49,9 @@ bin/boot.bin: boot/boot.asm
 %.o: %.asm
 	nasm $< -f elf -o $@
 
-run: bin/os.bin
-	qemu-system-i386 -fda bin/os.bin
-	make clean
-
-debug: bin/os.bin bin/kernel.elf
-	qemu-system-i386 -s -fda bin/os.bin &
+debug: bin/kernel.elf
+	qemu-system-i386 -s -S -cdrom os.iso &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file bin/kernel.elf"
 
 clean:
-	rm -rf $(OBJ) bin/*.bin bin/*.elf 
+	rm -rf $(OBJ) bin/*.bin bin/*.elf bin/*.o os.iso build/iso

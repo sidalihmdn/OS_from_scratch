@@ -1,5 +1,5 @@
-#include "../includes/libc/mem.h"
-#include "../includes/libc/string.h"
+#include "../../includes/kernel/mem/mem.h"
+#include "../../includes/libc/string.h"
 
 // External symbols defined in the linker script (linker.ld)
 extern uint32_t heap_start;

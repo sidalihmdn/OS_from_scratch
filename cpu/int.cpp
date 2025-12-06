@@ -49,7 +49,7 @@ void set_idt(void) {
     __asm__ volatile ("lidt %0" : : "m"(idtr));
     
     // Enable interrupts
-    __asm__ volatile ("sti");
+    __asm__ volatile ("sti");  // Commented out for now - causes crash with GRUB
 }
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {
@@ -105,9 +105,20 @@ void isr13_handler(registers_t regs){
     exception_handler(regs, "General Protection Fault");
 }
 
-void isr14_handler(registers_t regs){
-    exception_handler(regs, "Page Fault");
+uint32_t get_cr2() {
+    uint32_t val;
+    asm volatile("mov %%cr2, %0" : "=r"(val));
+    return val;
 }
+
+void isr14_handler(registers_t regs){
+    print("PAGE FAULT! Address: ");
+    print(int2String(get_cr2()));
+    print("\n");
+    while(1);
+}
+
+
 
 void init_exceptions(){
     register_interrupt_handler(0, isr0_handler);
