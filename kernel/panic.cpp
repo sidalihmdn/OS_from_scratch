@@ -1,5 +1,3 @@
-#pragma once
-
 #include "../includes/libc/string.h"
 #include "../includes/drivers/screen.h"
 
