@@ -1,9 +1,12 @@
 #include "../../includes/kernel/mem/pmm.h"
 #include "../../includes/libc/string.h"
 #include "../../includes/kernel/mem/mem.h"
+#include "../../includes/boot/multiboot_helpers.h"
 
 #define PAGE_SIZE 4096
 #define MAX_FRAMES 1024
+
+#define ALIGN_UP(addr, align) (((addr) + (align) - 1) & ~((align) - 1))
 
 #define SET_BIT(idx) (bitmap[idx/32] |= (1 << (idx % 32)))
 #define CLEAR_BIT(idx) (bitmap[idx/32] &= ~(1 << (idx % 32)))
@@ -17,10 +20,13 @@ uint32_t page_directory[1024] __attribute__((aligned(4096)));
 uint32_t page_table[1024] __attribute__((aligned(4096)));
 
 // bitmap
-uint32_t bitmap[MAX_FRAMES/32] __attribute__((aligned(4096))); // 1 bit for every frame in physical memory
+extern uint32_t kernel_end;
+extern uint32_t kernel_start;
+uint32_t* bitmap = (uint32_t*)ALIGN_UP(kernel_end, 4096);
 
 void mset(void* ptr, int value, uint32_t size);
-
+void free_region(uint64_t addr, uint64_t size);
+void reserve_region(uint64_t addr, uint64_t size);
 
 typedef struct {
     uint32_t present : 1;
@@ -50,13 +56,23 @@ typedef struct {
     uint32_t frame : 20;
 } __attribute__((packed)) page_directory_entry;
 
-void init_pmm(){
-    mset(bitmap, 0, sizeof(bitmap)); // clear the bitmap ; all frames are free
+void init_pmm(multiboot_info_t* mb_info){
+    uint32_t total_memory = multiboot_get_total_memory(mb_info);
+    uint32_t max_frames = total_memory / PAGE_SIZE;
+    uint32_t bitmap_size = (max_frames+7) / 8;
+    mset(bitmap, 0xFF, bitmap_size); 
 
-    // marking the first 1MB of memory as used
-    for(uint32_t i = 0; i < 256; i++){
-        SET_BIT(i);
+    memory_region_t regions[32];
+    uint32_t region_count = multiboot_get_usable_regions(mb_info, regions, 32);
+    
+    for(uint32_t i = 0; i < region_count; i++){
+        if(regions[i].type == 1){
+            free_region(regions[i].addr, regions[i].len);
+        }
     }
+    reserve_region(kernel_start, kernel_end - kernel_start);
+    reserve_region(mb_info->mmap_addr, mb_info->mmap_length);
+
     for(uint32_t i = 0; i < 1024; i++){
         // page_table[i].present = 1;
         // page_table[i].rw = 1;
@@ -97,6 +113,22 @@ void pmm_free_page(uint32_t addr){
     }
     uint32_t index = addr / PAGE_SIZE; // get the index of the frame
     CLEAR_BIT(index); // clear the bit
+}
+
+void free_region(uint64_t addr, uint64_t size){
+    uint64_t start = addr / PAGE_SIZE;
+    uint64_t end = (addr + size) / PAGE_SIZE;
+    for (uint64_t i = start; i < end; i++){
+        CLEAR_BIT(i);
+    }
+}
+
+void reserve_region(uint64_t addr, uint64_t size){
+    uint64_t start = addr / PAGE_SIZE;
+    uint64_t end = (addr + size) / PAGE_SIZE;
+    for (uint64_t i = start; i < end; i++){
+        SET_BIT(i);
+    }
 }
 
 void mset(void* ptr, int value, uint32_t size){
