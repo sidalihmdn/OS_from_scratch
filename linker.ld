@@ -30,6 +30,6 @@ SECTIONS
     kernel_end = .;
 
     heap_start = .;
-    . = . + 1M;
+    . = . + 1K;
     heap_end = .;
 }

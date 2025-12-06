@@ -4,7 +4,7 @@
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
-#include "../includes/kernel/mem/mem.h" 
+#include "../includes/kernel/mem/heap.h" 
 #include "../includes/kernel/mem/pmm.h"
 #include "../includes/kernel/mem/vmm.h"
 #include "../tests/libc_test.h"
@@ -28,24 +28,18 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_exceptions();
     init_keyboard();
     init_pmm(mb_info);
-    
-    clean_screen();
-    int a = 1;
-    int b = 2;
-    printk("A addr : %s\n", ptr_to_hex((uintptr_t)&a));
-    printk("B addr : %s\n", ptr_to_hex((uintptr_t)&b));
     init_vmm();
-    int c = 3;
-    int d = 4;
-    printk("C addr : %s\n", ptr_to_hex((uintptr_t)&c));
-    printk("D addr : %s\n", ptr_to_hex((uintptr_t)&d));
-    uintptr_t virtual_address = 0xC1000000;
-    uintptr_t physical_address = get_physical_address(virtual_address);
-    printk("Virtual address : %s\n", ptr_to_hex(virtual_address));
-    printk("Physical address : %s\n", ptr_to_hex(physical_address));    
-    printk("Welcome to OS from Scratch!\n");
-    printk("Type 'help' for commands.\n");
-    printk("os > ");
+    init_heap();
+    
+    clean_screen(); 
+    char* test = (char*)kmalloc(1024);
+    print_heap_info();
+    
+
+
+    // printk("Welcome to OS from Scratch!\n");
+    // printk("Type 'help' for commands.\n");
+    // printk("os > ");
 
     char buffer[256];
     
