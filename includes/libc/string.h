@@ -1,5 +1,4 @@
- // functions declarations
- //
+#pragma once
 #include "../unit_types.h"
 int len(const char *c);
 void print(const char string[]);
