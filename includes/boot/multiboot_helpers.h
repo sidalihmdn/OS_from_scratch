@@ -1,3 +1,4 @@
+#pragma once
 #include "../unit_types.h"
 
 typedef struct {
@@ -34,4 +35,4 @@ uint32_t multiboot_get_total_memory(multiboot_info_t* mb_info);
 uint32_t multiboot_get_mmap_entry_count(multiboot_info_t* mb_info);
 void multiboot_iterate_mmap(multiboot_info_t* mb_info, mmap_callback_t callback, void* context); 
 uint32_t multiboot_get_usable_regions(multiboot_info_t* mb_info, memory_region_t* regions, uint32_t max_regions);
-bool multiboot_is_memory_region_usable(memory_region_t* region, uint64_t addr, uint64_t len);
+bool multiboot_is_memory_region_usable(mmap_entry_t* entry);
