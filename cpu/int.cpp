@@ -112,9 +112,7 @@ uint32_t get_cr2() {
 }
 
 void isr14_handler(registers_t regs){
-    print("PAGE FAULT! Address: ");
-    print(int2String(get_cr2()));
-    print("\n");
+    printk("PAGE FAULT! Address: %x\n", get_cr2());
     while(1);
 }
 
