@@ -1,9 +1,10 @@
 #include "../../includes/unit_types.h"
+#include "../../includes/boot/multiboot_helpers.h"
+#include "../../includes/kernel/panic.h"
 #include "../../includes/kernel/mem/pages_struct.h"
 #include "../../includes/kernel/mem/pmm.h"
 #include "../../includes/kernel/mem/vmm.h"
 #include "../../includes/libc/string.h"
-#include "../../includes/boot/multiboot_helpers.h"
 
 
 
@@ -24,43 +25,72 @@ void flush_tlb(uintptr_t virtual_address);
 
 
 void init_vmm(multiboot_info_t* mb_info){
-    mset((void*)page_directory, 0, 4096);
     uint32_t offset = 0;
 
-    map_region(0, 0, 1024*1024*4); // identity map the first 1MB
+    /* initialize the page directory */
+    mset((void*)page_directory, 0, 4096);
+
+    /* identity map the first 1MB */
+    map_region(0, 0, 1024*1024*4);
 
     /* note : the heap is mapped after the kernel
     KERNEL_VIRTUAL_BASE = 0xC1000000 */
     map_region(HIGH_MEMORY_BASE, (uintptr_t)&kernel_start, (uintptr_t)&kernel_end - (uintptr_t)&kernel_start);
+
+    /* the  offset is used to keep track of the virtual address */
     offset += (uintptr_t)&kernel_end - (uintptr_t)&kernel_start;
 
-    /* map all memory usable regions to high memory*/
+    /* get the count of memory regions + the regions are stored in the regions array */
     memory_region_t regions[32];
     uint32_t region_count = multiboot_get_usable_regions(mb_info, regions, 32);
+    
+    /* map all memory regions to high memory */
     for (uint32_t i = 0; i < region_count; i++){
         map_region(HIGH_MEMORY_BASE + offset, regions[i].addr, regions[i].len);
         offset += regions[i].len;
     }
 
-    // identity map the VGA memory
+    /* identity map the VGA memory */
     map_region(0xB8000, 0xB8000, 4096);
 
+    /* load the page directory and enable paging */
     load_page_directory(page_directory);
     enable_paging();
 }
 
 void map_page(uintptr_t virtual_address, uintptr_t physical_address){
+    /* get the page directory index and page table index */
     uint32_t page_directory_index = virtual_address >> 22;
+
+    /* get the page table index */
     uint32_t page_table_index = (virtual_address >> 12) & 0x3FF;
 
+    /* get the page directory entry */
     uint32_t page_directory_entry = page_directory[page_directory_index];
+
+    /* check if the page directory entry is null */
+    if (page_directory_entry == 0){
+        PANIC("Page directory entry is null");
+    }
+
+    /* check if the present bit is not set */
     if (!(page_directory_entry & 0x1)){
+        /* allocate a new page table */
         uintptr_t new_page_table = alloc_page_table();
+        /* set the page directory entry 
+        * 0x3 is the page table flags - 011b (present : 1, writable : 1, user : 0)
+        */
         page_directory[page_directory_index] = new_page_table | 0x3;
         page_directory_entry = page_directory[page_directory_index];
     }
 
+    /* get the page table
+    * 0xFFFFF000 is the page table mask - 11111111111111111111111111110000b
+    */
     uint32_t* page_table = (uint32_t*)(page_directory_entry & 0xFFFFF000);
+    /* set the page table entry 
+    * 0x3 is the page table flags - 011b (present : 1, writable : 1, user : 0)
+    */
     page_table[page_table_index] = (physical_address & 0xFFFFF000) | 0x3;
     flush_tlb(virtual_address);
 }
