@@ -4,7 +4,7 @@
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
-#include "../includes/kernel/mem/mem.h" 
+#include "../includes/kernel/mem/heap.h" 
 #include "../includes/kernel/mem/pmm.h"
 #include "../includes/kernel/mem/vmm.h"
 #include "../tests/libc_test.h"
@@ -19,33 +19,27 @@
 #endif
 
 extern "C" void load_gdt();
+static uint32_t total_memory;
 void print_memory_map(multiboot_info_t* mb_info);
 void print_mem(mmap_entry_t* entry, void* context);
 
 extern "C" void kernel_main(multiboot_info_t* mb_info){
+    multiboot_info_t* multiboot_info = mb_info;
+    total_memory = multiboot_get_total_memory(multiboot_info);
     load_gdt();  // Load our own GDT before anything else
     set_idt();
     init_exceptions();
     init_keyboard();
-    init_pmm(mb_info);
-    
     clean_screen();
-    int a = 1;
-    int b = 2;
-    printk("A addr : %s\n", ptr_to_hex((uintptr_t)&a));
-    printk("B addr : %s\n", ptr_to_hex((uintptr_t)&b));
-    init_vmm();
-    int c = 3;
-    int d = 4;
-    printk("C addr : %s\n", ptr_to_hex((uintptr_t)&c));
-    printk("D addr : %s\n", ptr_to_hex((uintptr_t)&d));
-    uintptr_t virtual_address = 0xC1000000;
-    uintptr_t physical_address = get_physical_address(virtual_address);
-    printk("Virtual address : %s\n", ptr_to_hex(virtual_address));
-    printk("Physical address : %s\n", ptr_to_hex(physical_address));    
-    printk("Welcome to OS from Scratch!\n");
-    printk("Type 'help' for commands.\n");
-    printk("os > ");
+    init_pmm(multiboot_info);
+    init_vmm(multiboot_info);
+    init_heap();
+    
+    
+    
+    // printk("Welcome to OS from Scratch!\n");
+    // printk("Type 'help' for commands.\n");
+    // printk("os > ");
 
     char buffer[256];
     

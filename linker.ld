@@ -29,7 +29,4 @@ SECTIONS
 
     kernel_end = .;
 
-    heap_start = .;
-    . = . + 1M;
-    heap_end = .;
 }
