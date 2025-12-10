@@ -68,15 +68,13 @@ void map_page(uintptr_t virtual_address, uintptr_t physical_address){
     /* get the page directory entry */
     uint32_t page_directory_entry = page_directory[page_directory_index];
 
-    /* check if the page directory entry is null */
-    if (page_directory_entry == 0){
-        PANIC("Page directory entry is null");
-    }
-
     /* check if the present bit is not set */
     if (!(page_directory_entry & 0x1)){
         /* allocate a new page table */
         uintptr_t new_page_table = alloc_page_table();
+        if (!new_page_table){
+            PANIC("Failed to allocate page table");
+        }
         /* set the page directory entry 
         * 0x3 is the page table flags - 011b (present : 1, writable : 1, user : 0)
         */
@@ -84,7 +82,7 @@ void map_page(uintptr_t virtual_address, uintptr_t physical_address){
         page_directory_entry = page_directory[page_directory_index];
     }
 
-    /* get the page table
+    /* get the page table address
     * 0xFFFFF000 is the page table mask - 11111111111111111111111111110000b
     */
     uint32_t* page_table = (uint32_t*)(page_directory_entry & 0xFFFFF000);
@@ -96,15 +94,30 @@ void map_page(uintptr_t virtual_address, uintptr_t physical_address){
 }
 
 void unmap_page(uintptr_t virtual_address){
+    /* this function unmaps a page*/
+
+    /* get the page directory index - the 10 bits  */
     uint32_t page_directory_index = virtual_address >> 22;
+    /* get the page table index - the bit from 12 to 21 */
     uint32_t page_table_index = (virtual_address >> 12) & 0x3FF;
 
+    /* get the page directory entry */
     uint32_t page_directory_entry = page_directory[page_directory_index];
+
+    /* check if the present bit is not set */
     if (!(page_directory_entry & 0x1)){
         return;
     }
+
+    /* get the page table address
+    * 0xFFFFF000 is the page table mask - 11111111111111111111111111110000b
+    */
     uint32_t* page_table = (uint32_t*)(page_directory_entry & 0xFFFFF000);
+   
+    /* set the page table entry to 0 */
     page_table[page_table_index] = 0;
+
+    /* flush the TLB */
     flush_tlb(virtual_address);
 }
 
@@ -137,10 +150,12 @@ uintptr_t get_physical_address(uintptr_t virtual_address){
 }
 
 uintptr_t alloc_page_table(){
+    /* allocate a page table */
     uint32_t* page_table = (uint32_t*)pmm_alloc_page();
     if (!page_table){
         return 0;
     }
+    /* set the page table to 0 */
     mset((void*)page_table, 0, 4096);
     return (uintptr_t)page_table;
 }
