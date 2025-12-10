@@ -54,4 +54,4 @@ debug: bin/kernel.elf
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file bin/kernel.elf"
 
 clean:
-	rm -rf $(OBJ) bin/*.bin bin/*.elf bin/*.o os.iso build/iso
+	rm -rf $(OBJ) */*.bin */*.elf */*.o */*/*.o os.iso build/iso
