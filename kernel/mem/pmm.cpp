@@ -1,5 +1,6 @@
 #include "../../includes/kernel/mem/pmm.h"
 #include "../../includes/libc/string.h"
+#include "../../includes/libc/log.h"
 #include "../../includes/boot/multiboot_helpers.h"
 #include "../../includes/kernel/mem/pages_struct.h"
 
@@ -15,17 +16,16 @@
 // bitmap
 extern uint32_t kernel_end;
 extern uint32_t kernel_start;
-uint32_t* bitmap = (uint32_t*)ALIGN_UP(kernel_end, 4096);
-
+uint32_t* bitmap;
 static uint32_t total_memory;
 static uint32_t max_frames;
 static uint32_t bitmap_size;
 
 void free_region(uint64_t addr, uint64_t size);
-void reserve_region(uint64_t addr, uint64_t size);
 
 
 void init_pmm(multiboot_info_t* mb_info){
+    bitmap = (uint32_t*)ALIGN_UP((uint32_t)&kernel_end, 4096);
     total_memory = multiboot_get_total_memory(mb_info);
     max_frames = total_memory / PAGE_SIZE;
     bitmap_size = ((max_frames + 31) / 32) * sizeof(uint32_t);
@@ -34,16 +34,15 @@ void init_pmm(multiboot_info_t* mb_info){
 
     memory_region_t regions[32];
     uint32_t region_count = multiboot_get_usable_regions(mb_info, regions, 32);
-    
     for(uint32_t i = 0; i < region_count; i++){
         if(regions[i].type == 1){
             free_region(regions[i].addr, regions[i].len);
         }
     }
-    reserve_region(0, PAGE_SIZE);
-    reserve_region((uint64_t)kernel_start, kernel_end - kernel_start);
-    reserve_region((uint64_t)mb_info->mmap_addr, mb_info->mmap_length);
-    reserve_region((uint64_t)bitmap, bitmap_size);
+    pmm_reserve_region(0, PAGE_SIZE*256);
+    pmm_reserve_region((uint32_t)&kernel_start, (uint32_t)&kernel_end - (uint32_t)&kernel_start);
+    pmm_reserve_region((uint32_t)mb_info->mmap_addr, mb_info->mmap_length);
+    pmm_reserve_region((uint32_t)bitmap, bitmap_size);
 }
 
 uint32_t pmm_alloc_page(){
@@ -71,15 +70,16 @@ void pmm_free_page(uint32_t addr){
 
 void free_region(uint64_t addr, uint64_t size){
     uint64_t start = addr / PAGE_SIZE;
-    uint64_t end = (addr + size) / PAGE_SIZE;
+    uint64_t end = (addr + size + PAGE_SIZE - 1) / PAGE_SIZE;
     for (uint64_t i = start; i < end; i++){
         CLEAR_BIT(i);
     }
 }
 
-void reserve_region(uint64_t addr, uint64_t size){
+void pmm_reserve_region(uint64_t addr, uint64_t size){
     uint64_t start = addr / PAGE_SIZE;
-    uint64_t end = (addr + size) / PAGE_SIZE;
+    uint64_t end = (addr + size + PAGE_SIZE - 1) / PAGE_SIZE;
+    // LOG_F("pmm_reserve_region: start : %d end : %d\n", (uint32_t)start, (uint32_t)end);
     for (uint64_t i = start; i < end; i++){
         SET_BIT(i);
     }
@@ -91,3 +91,4 @@ void mset(void* ptr, int value, uint32_t size){
         p[i] = value;
     }
 }
+
