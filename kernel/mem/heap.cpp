@@ -1,23 +1,25 @@
 #include "../../includes/kernel/mem/heap.h"
 #include "../../includes/libc/string.h"
+#include "../../includes/libc/log.h"
 #include "../../includes/kernel/mem/vmm.h"
 #include "../../includes/kernel/mem/pmm.h"
+extern uint32_t kernel_end;
 
-// External symbols defined in the linker script (linker.ld)
-extern uint32_t heap_start;
-extern uint32_t heap_end;
-
-static uint32_t heap_limit;
+static uintptr_t heap_limit;
 
 static heap_block_t* first_block = NULL;
 
 void init_heap (){
-    first_block = (heap_block_t*)&heap_start;
-    first_block->size = ((uint32_t)&heap_end - (uint32_t)&heap_start) - sizeof(heap_block_t) ;
+    uintptr_t heap_start = PA_VA(pmm_alloc_page());
+    uintptr_t heap_end = heap_start + 4096;
+
+
+    first_block = (heap_block_t*)heap_start;
+    first_block->size = 4096 - sizeof(heap_block_t) ;
     first_block->is_free = true;
     first_block->next = NULL;
     first_block->prev = NULL;
-    heap_limit = (uint32_t)&heap_end;
+    heap_limit = heap_end;
 }
 
 void* kmalloc(uint32_t size){
@@ -48,7 +50,7 @@ void* kmalloc(uint32_t size){
         last_block = current_block;
         current_block = current_block->next;
     }
-    current_block = (heap_block_t*)expand_heap(size, last_block);
+    current_block = (heap_block_t*)expand_heap(size, (heap_block_t*)last_block);
     if (!current_block){
         return 0;
     }
@@ -69,7 +71,6 @@ void* expand_heap(uintptr_t size, heap_block_t* last_block){
     if(!last_block){
         last_block = first_block;
     }
-
     for (uint32_t i = 0; i < needed_pages; i++){
         uintptr_t new_page = pmm_alloc_page();
         if (!new_page){
@@ -84,6 +85,9 @@ void* expand_heap(uintptr_t size, heap_block_t* last_block){
     new_block->prev = last_block;
     new_block->next = NULL;
     last_block->next = new_block;
+    // TODO : investigate what happens when the first and unique block is expanded
+    // the size is set to 0    
+    
 
     // if any remaining space, create a new free block
     uint32_t remaining = needed_pages*4096-needed_size;
@@ -124,4 +128,11 @@ void print_heap_info(){
         current_block = current_block->next;
     }
     printk("=== END HEAP INFO ===\n");
-}   
+}
+
+void print_heap_block(heap_block_t* block){
+    printk("Block at %s, size %d, free %d\n", 
+        ptr_to_hex((uintptr_t)block), 
+        block->size, 
+        block->is_free);
+}

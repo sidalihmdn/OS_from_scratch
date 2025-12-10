@@ -18,6 +18,7 @@ void* expand_heap(uintptr_t size, heap_block_t* last_block);
 void coalesce_free_blocks();
 
 void print_heap_info();
+void print_heap_block(heap_block_t* block);
 
 
  
