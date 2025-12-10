@@ -21,11 +21,12 @@ typedef struct{
     uint32_t type;
 } __attribute__((packed)) mmap_entry_t;
 
+
 typedef struct {
     uint64_t addr;
     uint64_t len;
     uint32_t type;
-} __attribute__((packed)) memory_region_t;
+} memory_region_t;
 
 typedef void (*mmap_callback_t)(mmap_entry_t* entry, void* context);
 
@@ -36,3 +37,5 @@ uint32_t multiboot_get_mmap_entry_count(multiboot_info_t* mb_info);
 void multiboot_iterate_mmap(multiboot_info_t* mb_info, mmap_callback_t callback, void* context); 
 uint32_t multiboot_get_usable_regions(multiboot_info_t* mb_info, memory_region_t* regions, uint32_t max_regions);
 bool multiboot_is_memory_region_usable(mmap_entry_t* entry);
+uint32_t multiboot_get_usable_memory(multiboot_info_t* mb_info);
+void multiboot_print_mmap(multiboot_info_t* mb_info);

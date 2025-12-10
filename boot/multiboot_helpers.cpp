@@ -1,5 +1,6 @@
 #include "../includes/boot/multiboot_helpers.h"
 #include "../includes/kernel/panic.h"
+#include "../includes/libc/string.h"
 
 uint32_t multiboot_get_total_memory(multiboot_info_t* mb_info){
     return (mb_info->mem_upper + mb_info->mem_lower) * 1024;
@@ -10,9 +11,14 @@ void multiboot_iterate_mmap(multiboot_info_t* mb_info, mmap_callback_t callback,
     if(!mb_info || !callback){
         return;
     }
-    mmap_entry_t* entry = (mmap_entry_t*)mb_info->mmap_addr;
-    for(entry; (uint8_t*)entry < (uint8_t*)mb_info->mmap_addr + mb_info->mmap_length; entry++){
+    uintptr_t current_addr = mb_info->mmap_addr;
+    uintptr_t end_addr = current_addr + mb_info->mmap_length;
+    while (current_addr < end_addr) {
+        mmap_entry_t* entry = (mmap_entry_t*)current_addr;
+        
         callback(entry, context);
+        // 2. CRITICAL FIX: Advance the pointer by (size + 4 bytes for the size field itself)
+        current_addr += entry->size + sizeof(uint32_t); 
     }
 } 
 
@@ -65,3 +71,25 @@ bool multiboot_is_memory_region_usable(mmap_entry_t* entry){
     }
     return false;
 }
+
+void multiboot_print_mmap(multiboot_info_t* mb_info){
+    if(!mb_info){
+        panic("multiboot_print_mmap: mb_info is null");
+        return;
+    }
+    uintptr_t current_addr = mb_info->mmap_addr;
+    uintptr_t end_addr = current_addr + mb_info->mmap_length;
+    printk("mmap_addr : %x, mmap_length : %x\n", (uint32_t)mb_info->mmap_addr, (uint32_t)mb_info->mmap_length);
+    while (current_addr < end_addr) {
+        mmap_entry_t* entry = (mmap_entry_t*)current_addr;
+        uint64_t addr = entry->addr;
+        uint64_t len = entry->len;
+        uint32_t type = entry->type;
+        uint32_t size = entry->size;
+        printk("addr : %x, len : %x, type : %d, size : %d\n", (uint32_t)addr, (uint32_t)len, type, size);
+        
+        // 2. CRITICAL FIX: Advance the pointer by (size + 4 bytes for the size field itself)
+        current_addr += entry->size + sizeof(uint32_t); 
+    }
+}
+static_assert(sizeof(mmap_entry_t) == 24, "mmap_entry_t size is not 24 bytes");
