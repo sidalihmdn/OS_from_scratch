@@ -3,16 +3,15 @@
 #include "../../includes/libc/log.h"
 #include "../../includes/kernel/mem/vmm.h"
 #include "../../includes/kernel/mem/pmm.h"
-extern uint32_t kernel_end;
 
+extern uint32_t kernel_end;
 static uintptr_t heap_limit;
 
-static heap_block_t* first_block = NULL;
+static heap_block_t* first_block;
 
 void init_heap (){
     uintptr_t heap_start = PA_VA(pmm_alloc_page());
     uintptr_t heap_end = heap_start + 4096;
-
 
     first_block = (heap_block_t*)heap_start;
     first_block->size = 4096 - sizeof(heap_block_t) ;

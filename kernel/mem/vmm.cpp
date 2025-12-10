@@ -6,23 +6,16 @@
 #include "../../includes/kernel/mem/vmm.h"
 #include "../../includes/libc/string.h"
 
-
-
-
-
 // assembly helper functions
 extern "C" void load_page_directory(uint32_t* page_directory);
 extern "C" void enable_paging();
 
 extern uint32_t kernel_end;
 extern uint32_t kernel_start;
-extern uint32_t heap_start;
-extern uint32_t heap_end;
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 
 void flush_tlb(uintptr_t virtual_address);
-
 
 void init_vmm(multiboot_info_t* mb_info){
     uint32_t offset = 0;
