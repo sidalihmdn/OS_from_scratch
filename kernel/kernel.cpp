@@ -19,24 +19,24 @@
 #endif
 
 extern "C" void load_gdt();
+static uint32_t total_memory;
 void print_memory_map(multiboot_info_t* mb_info);
 void print_mem(mmap_entry_t* entry, void* context);
 
 extern "C" void kernel_main(multiboot_info_t* mb_info){
+    multiboot_info_t* multiboot_info = mb_info;
+    total_memory = multiboot_get_total_memory(multiboot_info);
     load_gdt();  // Load our own GDT before anything else
     set_idt();
     init_exceptions();
     init_keyboard();
-    init_pmm(mb_info);
-    init_vmm();
+    clean_screen();
+    init_pmm(multiboot_info);
+    init_vmm(multiboot_info);
     init_heap();
     
-    clean_screen(); 
-    char* test = (char*)kmalloc(1024);
-    print_heap_info();
     
-
-
+    
     // printk("Welcome to OS from Scratch!\n");
     // printk("Type 'help' for commands.\n");
     // printk("os > ");
