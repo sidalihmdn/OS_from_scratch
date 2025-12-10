@@ -3,9 +3,11 @@
 #include "../../includes/kernel/mem/pmm.h"
 #include "../../includes/kernel/mem/vmm.h"
 #include "../../includes/libc/string.h"
+#include "../../includes/boot/multiboot_helpers.h"
 
-#define KERNEL_VIRTUAL_BASE 0xC1000000u // 3GB + 1MB
-#define PAGE_SIZE 4096
+
+
+
 
 // assembly helper functions
 extern "C" void load_page_directory(uint32_t* page_directory);
@@ -13,19 +15,32 @@ extern "C" void enable_paging();
 
 extern uint32_t kernel_end;
 extern uint32_t kernel_start;
+extern uint32_t heap_start;
+extern uint32_t heap_end;
 
 uint32_t page_directory[1024] __attribute__((aligned(4096)));
 
 void flush_tlb(uintptr_t virtual_address);
 
 
-void init_vmm(){
+void init_vmm(multiboot_info_t* mb_info){
     mset((void*)page_directory, 0, 4096);
+    uint32_t offset = 0;
 
-    // identity map the kernel
-    map_region(KERNEL_VIRTUAL_BASE, (uintptr_t)&kernel_start, (uintptr_t)&kernel_end - (uintptr_t)&kernel_start);
-    // identity map the first 4MB
-    map_region(0, 0, 4096*512);
+    map_region(0, 0, 1024*1024*4); // identity map the first 1MB
+
+    /* note : the heap is mapped after the kernel
+    KERNEL_VIRTUAL_BASE = 0xC1000000 */
+    map_region(HIGH_MEMORY_BASE, (uintptr_t)&kernel_start, (uintptr_t)&kernel_end - (uintptr_t)&kernel_start);
+    offset += (uintptr_t)&kernel_end - (uintptr_t)&kernel_start;
+
+    /* map all memory usable regions to high memory*/
+    memory_region_t regions[32];
+    uint32_t region_count = multiboot_get_usable_regions(mb_info, regions, 32);
+    for (uint32_t i = 0; i < region_count; i++){
+        map_region(HIGH_MEMORY_BASE + offset, regions[i].addr, regions[i].len);
+        offset += regions[i].len;
+    }
 
     // identity map the VGA memory
     map_region(0xB8000, 0xB8000, 4096);
@@ -102,4 +117,13 @@ uintptr_t alloc_page_table(){
 
 void flush_tlb(uintptr_t virtual_address){
     asm volatile("invlpg (%0)" : : "r"(virtual_address) : "memory");
+}
+
+void print_vmm_info(){
+    printk("Mapped regions  :\n");
+    for (int i = 0; i < 1024; i++){
+        if (page_directory[i] & 0x1){
+            printk("  %d: %x\n", i, page_directory[i]);
+        }
+    }
 }
