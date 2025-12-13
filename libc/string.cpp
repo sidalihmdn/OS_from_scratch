@@ -1,6 +1,6 @@
-#include "../includes/libc/string.h"
-#include "../includes/drivers/display/console.h"
-#include "../includes/drivers/screen.h"
+#include <libc/string.h>
+#include <drivers/display/console.h>
+#include <drivers/screen.h>
 #include <stdarg.h>
 
 /// @brief this function will return the lenght of a given string

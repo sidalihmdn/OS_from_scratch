@@ -1,8 +1,8 @@
-#include "../../includes/kernel/mem/pmm.h"
-#include "../../includes/libc/string.h"
-#include "../../includes/libc/log.h"
-#include "../../includes/boot/multiboot_helpers.h"
-#include "../../includes/kernel/mem/pages_struct.h"
+#include <kernel/mem/pmm.h>
+#include <libc/string.h>
+#include <libc/log.h>
+#include <boot/multiboot_helpers.h>
+#include <kernel/mem/pages_struct.h>
 
 #define PAGE_SIZE 4096
 

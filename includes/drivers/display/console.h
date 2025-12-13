@@ -1,8 +1,8 @@
 #ifndef CONSOLE_H
 #define CONSOLE_H
 
-#include "../../unit_types.h"
-#include "../../boot/multiboot_helpers.h"
+#include <unit_types.h>
+#include <boot/multiboot_helpers.h>
 
 #define CONSOLE_MARGIN 10
 

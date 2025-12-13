@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SCREEN_H
+#define SCREEN_H
 #define VIDEO_ADDRESS 0xb8000
 #define MAX_ROW 25
 #define MAX_COL 80
@@ -13,3 +14,5 @@
 void clean_screen();
 void print_char(char attribute, int col, int row , char character);
 void print_string(const char string[], int len);
+
+#endif

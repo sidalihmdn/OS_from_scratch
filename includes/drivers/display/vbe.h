@@ -1,8 +1,8 @@
 #ifndef VBE_H
 #define VBE_H
 
-#include "../../unit_types.h"
-#include "../../boot/multiboot_helpers.h"
+#include <unit_types.h>
+#include <boot/multiboot_helpers.h>
 
 /*
  * Adresse virtuelle où on mappe le framebuffer

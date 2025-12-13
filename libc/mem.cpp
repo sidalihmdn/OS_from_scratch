@@ -1,5 +1,5 @@
-#include "../includes/libc/mem.h"
-#include "../includes/unit_types.h"
+#include <libc/mem.h>
+#include <unit_types.h>
 
 void* memcpy(void* dest, const void* src, uint32_t size){
     uint8_t* d = (uint8_t*)dest;

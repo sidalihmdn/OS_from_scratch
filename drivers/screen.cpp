@@ -1,5 +1,5 @@
-#include "../includes/drivers/screen.h"
-#include "../includes/cpu/ports.h"
+#include <drivers/screen.h>
+#include <cpu/ports.h>
 
 // declarations
 void parse_offset(int &col , int &row , int offset);

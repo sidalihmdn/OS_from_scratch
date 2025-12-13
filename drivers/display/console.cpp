@@ -1,9 +1,9 @@
-#include "../../includes/drivers/display/console.h"
-#include "../../includes/boot/multiboot_helpers.h"
-#include "../../includes/cpu/int.h"
-#include "../../includes/unit_types.h"
-#include "../../includes/drivers/display/vbe.h"
-#include "../../includes/drivers/display/font.h"
+#include <drivers/display/console.h>
+#include <boot/multiboot_helpers.h>
+#include <cpu/int.h>
+#include <unit_types.h>
+#include <drivers/display/vbe.h>
+#include <drivers/display/font.h>
 
 static uint32_t cursor_x;
 static uint32_t cursor_y;

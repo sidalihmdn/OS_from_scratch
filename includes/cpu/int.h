@@ -3,8 +3,8 @@
 #ifndef INT_H
 #define INT_H
 
-#include "../unit_types.h"
-#include "../drivers/screen.h"
+#include <unit_types.h>
+#include <drivers/screen.h>
 
 #define INT_GATE_FLAG   0x8E   
 #define TRAP_GATE_FLAG  0x8F

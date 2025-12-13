@@ -1,6 +1,6 @@
 #ifndef LOG_H
 #define LOG_H
-#include "string.h"
+#include <libc/string.h>
 
 
 #define LOG(msg) printk("[%s:%d] %s\n", __FILE__, __LINE__, msg);

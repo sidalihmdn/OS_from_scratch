@@ -1,5 +1,7 @@
-#pragma once
-#include "../unit_types.h"
+#ifndef MULTIBOOT_HELPERS_H
+#define MULTIBOOT_HELPERS_H
+
+#include <unit_types.h>
 
 typedef struct {
     uint32_t flags;
@@ -69,3 +71,5 @@ uint32_t multiboot_get_usable_regions(multiboot_info_t* mb_info, memory_region_t
 bool multiboot_is_memory_region_usable(mmap_entry_t* entry);
 uint32_t multiboot_get_usable_memory(multiboot_info_t* mb_info);
 void multiboot_print_mmap(multiboot_info_t* mb_info);
+
+#endif

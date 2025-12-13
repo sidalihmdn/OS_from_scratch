@@ -1,10 +1,10 @@
-#include "../../includes/drivers/display/vbe.h"
-#include "../../includes/boot/multiboot_helpers.h"
-#include "../../includes/unit_types.h"
-#include "../../includes/kernel/mem/vmm.h"
-#include "../../includes/kernel/mem/heap.h"
-#include "../../includes/libc/log.h"
-#include "../../includes/libc/mem.h"
+#include <drivers/display/vbe.h>
+#include <boot/multiboot_helpers.h>
+#include <unit_types.h>
+#include <kernel/mem/vmm.h>
+#include <kernel/mem/heap.h>
+#include <libc/log.h>
+#include <libc/mem.h>
 
 static uintptr_t* video_buffer;
 static uint32_t size;

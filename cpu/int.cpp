@@ -1,9 +1,9 @@
-#include "../includes/cpu/int.h"
-#include "../includes/cpu/pic.h"
-#include "../includes/cpu/ports.h"
-#include "../includes/drivers/screen.h"
-#include "../includes/drivers/keyboard.h"
-#include "../includes/libc/string.h"
+#include <cpu/int.h>
+#include <cpu/pic.h>
+#include <cpu/ports.h>
+#include <drivers/screen.h>
+#include <drivers/keyboard.h>
+#include <libc/string.h>
 
 #define IDT_SIZE 256
 

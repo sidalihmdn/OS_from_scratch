@@ -1,8 +1,8 @@
-#include "../../includes/kernel/mem/heap.h"
-#include "../../includes/libc/string.h"
-#include "../../includes/libc/log.h"
-#include "../../includes/kernel/mem/vmm.h"
-#include "../../includes/kernel/mem/pmm.h"
+#include <kernel/mem/heap.h>
+#include <libc/string.h>
+#include <libc/log.h>
+#include <kernel/mem/vmm.h>
+#include <kernel/mem/pmm.h>
 
 extern uint32_t kernel_end;
 static uintptr_t heap_limit;
