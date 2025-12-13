@@ -1,8 +1,9 @@
 #include <cpu/pic.h>
 #include <cpu/ports.h>
+#include <unit_types.h>
 
 void PIC_remap(int offset1, int offset2) {
-    unsigned char a1, a2;
+    uint8_t a1, a2;
     
     // Save masks
     a1 = inb(PIC1_DATA);
@@ -38,4 +39,40 @@ void PIC_sendEOI(unsigned char irq) {
     
     // Always send EOI to master PIC
     outb(PIC1_COMMAND, PIC_EOI);
+}
+
+void PIC_clear_mask(unsigned char irq) {
+    uint16_t port;
+    uint8_t value;
+    
+    // Determine which PIC to use
+    if (irq < 8) {
+        port = PIC1_DATA;  // Master PIC
+    } else {
+        port = PIC2_DATA;  // Slave PIC
+        irq -= 8;          // Adjust IRQ number for slave
+    }
+    
+    // Read current mask, clear the bit for this IRQ, write back
+    value = inb(port);
+    value &= ~(1 << irq);  // Clear bit = enable IRQ
+    outb(port, value);
+}
+
+void PIC_set_mask(unsigned char irq) {
+    uint16_t port;
+    uint8_t value;
+    
+    // Determine which PIC to use
+    if (irq < 8) {
+        port = PIC1_DATA;  // Master PIC
+    } else {
+        port = PIC2_DATA;  // Slave PIC
+        irq -= 8;          // Adjust IRQ number for slave
+    }
+    
+    // Read current mask, set the bit for this IRQ, write back
+    value = inb(port);
+    value |= (1 << irq);   // Set bit = disable IRQ
+    outb(port, value);
 }
