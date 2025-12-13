@@ -11,6 +11,7 @@
 #include <kernel/mem/vmm.h>
 #include <kernel/panic.h>
 #include <tests/libc_test.h>
+#include <drivers/clock/clock.h>
 
 #if DEBUG
 //some debug code
@@ -25,6 +26,10 @@ static uint32_t total_memory;
 void print_memory_map(multiboot_info_t* mb_info);
 void print_mem(mmap_entry_t* entry, void* context);
 
+void test_timer_callback(){
+    printk("Timer callback\n");
+}
+
 extern "C" void kernel_main(multiboot_info_t* mb_info){
     multiboot_info_t* multiboot_info = mb_info;
     total_memory = multiboot_get_total_memory(multiboot_info);
@@ -37,8 +42,11 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_vmm(multiboot_info);
     init_heap();
     console_init(multiboot_info);
-    printk("World");
-    
+    init_clock();
+
+    rtc_time_t time;
+    clock_get_date_time(&time);
+    printk("Current time: %d:%d:%d\n", (int)time.hour, (int)time.minute, (int)time.second);
     
     
     
