@@ -5,7 +5,7 @@ GDB = i386-elf-gdb
 CFLAGS   = -g -ffreestanding -O2 -Wall -Wextra
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
-C_SOURCES = $(wildcard drivers/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp kernel/*/*.cpp boot/*.cpp)
+C_SOURCES = $(wildcard drivers/*.cpp drivers/*/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp kernel/*/*.cpp boot/*.cpp)
 ASM_SOURCES = $(wildcard cpu/*.asm kernel/mem/*.asm)
 
 HEADERS = $(wildcard includes/*.h includes/*/*.h includes/*/*/*.h)
