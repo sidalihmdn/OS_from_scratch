@@ -5,6 +5,7 @@
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
 #include "../includes/drivers/display/console.h"
+#include "../includes/drivers/display/vbe.h"
 #include "../includes/kernel/mem/heap.h" 
 #include "../includes/kernel/mem/pmm.h"
 #include "../includes/kernel/mem/vmm.h"
@@ -40,6 +41,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     
     
     
+    
     // printk("Welcome to OS from Scratch!\n");
     // printk("Type 'help' for commands.\n");
     // printk("os > ");
@@ -66,6 +68,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
 
             printk("os > ");
         }
+        vbe_swap_buffer();
     }
 }
 

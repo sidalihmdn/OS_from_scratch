@@ -14,6 +14,7 @@
 void vbe_init(multiboot_info_t* mb_info);
 void vbe_put_pixel(uint32_t x, uint32_t y, uint32_t color);
 void vbe_clear_screen(uint32_t color);
+void vbe_scroll_up(uint32_t lines, uint32_t bg_color);
 
 /*
  * Getters
@@ -22,7 +23,13 @@ uint32_t vbe_get_width();
 uint32_t vbe_get_height();
 
 /*
- * Helper couleur
+ * Swap buffer
+ * copy the video_buffer to the framebuffer
+ */
+void vbe_swap_buffer();
+
+/*
+ * color helper
  */
 uint32_t vbe_rgb(uint8_t r, uint8_t g, uint8_t b);
 
