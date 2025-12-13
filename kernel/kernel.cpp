@@ -4,6 +4,7 @@
 #include "../includes/cpu/int.h"
 #include "../includes/cpu/pic.h"
 #include "../includes/drivers/keyboard.h"
+#include "../includes/drivers/display/console.h"
 #include "../includes/kernel/mem/heap.h" 
 #include "../includes/kernel/mem/pmm.h"
 #include "../includes/kernel/mem/vmm.h"
@@ -34,6 +35,8 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_pmm(multiboot_info);
     init_vmm(multiboot_info);
     init_heap();
+    console_init(multiboot_info);
+    printk("World");
     
     
     
@@ -42,7 +45,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     // printk("os > ");
 
     char buffer[256];
-    
+    asm volatile("xchg %bx, %bx");
     for(;;){
         if (get_input_buffer(buffer, 256)) {
             if (strcmp(buffer, (char*)"help") == 0) {
