@@ -1,7 +1,8 @@
 ; Multiboot header for GRUB
 MBALIGN  equ  1 << 0            ; align loaded modules on page boundaries
 MEMINFO  equ  1 << 1            ; provide memory map
-FLAGS    equ  MBALIGN | MEMINFO ; multiboot flags
+VIDEO_MODE equ 1 << 2
+FLAGS    equ  MBALIGN | MEMINFO | VIDEO_MODE ; multiboot flags
 MAGIC    equ  0x1BADB002        ; magic number
 CHECKSUM equ -(MAGIC + FLAGS)   ; checksum
 
@@ -10,6 +11,11 @@ align 4
     dd MAGIC
     dd FLAGS
     dd CHECKSUM
+    dd 0, 0, 0, 0, 0; header_addr
+    dd 0            ; mode_type
+    dd 1024         ; width
+    dd 768          ; height
+    dd 32           ; depth
 
 section .bss
 align 16
