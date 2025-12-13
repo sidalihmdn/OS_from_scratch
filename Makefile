@@ -5,10 +5,10 @@ GDB = i386-elf-gdb
 CFLAGS   = -g -ffreestanding -O2 -Wall -Wextra -Iincludes
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
-C_SOURCES = $(wildcard drivers/*.cpp drivers/*/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp kernel/*/*.cpp boot/*.cpp)
-ASM_SOURCES = $(wildcard cpu/*.asm kernel/mem/*.asm)
+C_SOURCES = $(wildcard drivers/*.cpp arch/x86/*/*.cpp arch/x86/*.cpp drivers/*/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp kernel/*/*.cpp boot/*.cpp)
+ASM_SOURCES = $(wildcard cpu/*.asm kernel/mem/*.asm arch/x86/*.asm)
 
-HEADERS = $(wildcard includes/*.h includes/*/*.h includes/*/*/*.h)
+HEADERS = $(wildcard includes/*.h includes/*/*.h includes/*/*/*.h includes/*/*/*/*.h)
 
 OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES)) $(patsubst %.asm,%.o,$(ASM_SOURCES))
 
