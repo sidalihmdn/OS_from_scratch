@@ -116,6 +116,13 @@ void isr14_handler(registers_t regs){
     while(1);
 }
 
+void enable_interrupts(){
+    __asm__ volatile ("sti");
+}
+
+void disable_interrupts(){
+    __asm__ volatile ("cli");
+}
 
 
 void init_exceptions(){

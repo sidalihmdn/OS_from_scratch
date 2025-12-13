@@ -58,4 +58,7 @@ void set_idt(void);
 
 void init_exceptions();
 
+void enable_interrupts();
+void disable_interrupts();
+
 #endif // !INT_H
