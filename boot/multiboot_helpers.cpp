@@ -1,6 +1,6 @@
-#include "../includes/boot/multiboot_helpers.h"
-#include "../includes/kernel/panic.h"
-#include "../includes/libc/string.h"
+#include <boot/multiboot_helpers.h>
+#include <kernel/panic.h>
+#include <libc/string.h>
 
 uint32_t multiboot_get_total_memory(multiboot_info_t* mb_info){
     return (mb_info->mem_upper + mb_info->mem_lower) * 1024;

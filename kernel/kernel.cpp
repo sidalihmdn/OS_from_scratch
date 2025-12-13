@@ -1,14 +1,16 @@
-#include "../includes/drivers/screen.h"
-#include "../includes/boot/multiboot_helpers.h"
-#include "../includes/libc/string.h"
-#include "../includes/cpu/int.h"
-#include "../includes/cpu/pic.h"
-#include "../includes/drivers/keyboard.h"
-#include "../includes/kernel/mem/heap.h" 
-#include "../includes/kernel/mem/pmm.h"
-#include "../includes/kernel/mem/vmm.h"
-#include "../tests/libc_test.h"
-#include "../includes/kernel/panic.h"
+#include <drivers/screen.h>
+#include <boot/multiboot_helpers.h>
+#include <libc/string.h>
+#include <cpu/int.h>
+#include <cpu/pic.h>
+#include <drivers/keyboard.h>
+#include <drivers/display/console.h>
+#include <drivers/display/vbe.h>
+#include <kernel/mem/heap.h> 
+#include <kernel/mem/pmm.h>
+#include <kernel/mem/vmm.h>
+#include <kernel/panic.h>
+#include <tests/libc_test.h>
 
 #if DEBUG
 //some debug code
@@ -34,6 +36,9 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_pmm(multiboot_info);
     init_vmm(multiboot_info);
     init_heap();
+    console_init(multiboot_info);
+    printk("World");
+    
     
     
     
@@ -42,7 +47,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     // printk("os > ");
 
     char buffer[256];
-    
+    asm volatile("xchg %bx, %bx");
     for(;;){
         if (get_input_buffer(buffer, 256)) {
             if (strcmp(buffer, (char*)"help") == 0) {
@@ -63,6 +68,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
 
             printk("os > ");
         }
+        vbe_swap_buffer();
     }
 }
 

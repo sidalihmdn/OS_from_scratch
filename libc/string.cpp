@@ -1,5 +1,6 @@
-#include "../includes/libc/string.h"
-#include "../includes/drivers/screen.h"
+#include <libc/string.h>
+#include <drivers/display/console.h>
+#include <drivers/screen.h>
 #include <stdarg.h>
 
 /// @brief this function will return the lenght of a given string
@@ -98,7 +99,7 @@ void printk(const char* s, ...){
                 case 'd': {
                     char* a = int2String(va_arg(args, int));
                     while (*a != '\0') {
-                        print_char(WHITE_ON_BLACK, -1, -1, *a);
+                        console_put_char(*a);
                         a++;
                     }
                     break;
@@ -107,7 +108,7 @@ void printk(const char* s, ...){
                     char *buffer;
                     buffer = ptr_to_hex(va_arg(args, uint32_t));
                     while (*buffer != '\0') {
-                        print_char(WHITE_ON_BLACK, -1, -1, *buffer);
+                        console_put_char(*buffer);
                         buffer++;
                     }
                     break;
@@ -115,20 +116,20 @@ void printk(const char* s, ...){
                 case 's': {
                     char* a = va_arg(args, char*);
                     while (*a != '\0') {
-                        print_char(WHITE_ON_BLACK, -1, -1, *a);
+                        console_put_char(*a);
                         a++;
                     }
                     break;
                 }
                 default: {
-                    print_char(WHITE_ON_BLACK, -1, -1, s[i]);
+                    console_put_char(s[i]);
                     break;
                 }
             }
             i++;
         }
         else{
-            print_char(WHITE_ON_BLACK, -1, -1, s[i]);
+            console_put_char(s[i]);
             i++;
         }
     }

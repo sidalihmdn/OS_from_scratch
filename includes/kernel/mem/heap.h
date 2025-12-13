@@ -1,8 +1,8 @@
- #pragma once
-
- #include "../../unit_types.h"
+#ifndef HEAP_H
+#define HEAP_H
+#include <unit_types.h>
  
- #define BLOCK_SIZE 32
+#define BLOCK_SIZE 32
  
 typedef struct heap_block_t {
     uint32_t size;
@@ -19,6 +19,7 @@ void coalesce_free_blocks();
 
 void print_heap_info();
 void print_heap_block(heap_block_t* block);
+#endif
 
 
- 
+    

@@ -1,9 +1,9 @@
-#include "../includes/cpu/int.h"
-#include "../includes/cpu/pic.h"
-#include "../includes/cpu/ports.h"
-#include "../includes/drivers/screen.h"
-#include "../includes/drivers/keyboard.h"
-#include "../includes/libc/string.h"
+#include <cpu/int.h>
+#include <cpu/pic.h>
+#include <cpu/ports.h>
+#include <drivers/screen.h>
+#include <drivers/keyboard.h>
+#include <libc/string.h>
 
 #define IDT_SIZE 256
 
@@ -116,6 +116,13 @@ void isr14_handler(registers_t regs){
     while(1);
 }
 
+void enable_interrupts(){
+    __asm__ volatile ("sti");
+}
+
+void disable_interrupts(){
+    __asm__ volatile ("cli");
+}
 
 
 void init_exceptions(){

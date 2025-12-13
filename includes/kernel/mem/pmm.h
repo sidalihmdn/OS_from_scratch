@@ -1,5 +1,5 @@
  #pragma once
- #include "../../boot/multiboot_helpers.h"
+ #include <boot/multiboot_helpers.h>
  
 void init_pmm(multiboot_info_t* mb_info);
 uint32_t pmm_alloc_page();

@@ -1,10 +1,10 @@
-#include "../../includes/unit_types.h"
-#include "../../includes/boot/multiboot_helpers.h"
-#include "../../includes/kernel/panic.h"
-#include "../../includes/kernel/mem/pages_struct.h"
-#include "../../includes/kernel/mem/pmm.h"
-#include "../../includes/kernel/mem/vmm.h"
-#include "../../includes/libc/string.h"
+#include <unit_types.h>
+#include <boot/multiboot_helpers.h>
+#include <kernel/panic.h>
+#include <kernel/mem/pages_struct.h>
+#include <kernel/mem/pmm.h>
+#include <kernel/mem/vmm.h>
+#include <libc/string.h>
 
 // assembly helper functions
 extern "C" void load_page_directory(uint32_t* page_directory);

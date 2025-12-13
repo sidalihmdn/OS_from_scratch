@@ -1,8 +1,8 @@
-#include "libc_test.h"
-#include "../includes/libc/string.h"
-#include "../includes/kernel/mem/pmm.h"
-#include "../includes/kernel/panic.h"
-#include "../includes/drivers/screen.h"
+#include <tests/libc_test.h>
+#include <libc/string.h>
+#include <kernel/mem/pmm.h>
+#include <kernel/panic.h>
+#include <drivers/screen.h>
 
 void test_string() {
     printk("\nTesting String Lib...\n");

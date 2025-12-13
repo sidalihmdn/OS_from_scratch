@@ -3,8 +3,8 @@
 #ifndef INT_H
 #define INT_H
 
-#include "../unit_types.h"
-#include "../drivers/screen.h"
+#include <unit_types.h>
+#include <drivers/screen.h>
 
 #define INT_GATE_FLAG   0x8E   
 #define TRAP_GATE_FLAG  0x8F
@@ -57,5 +57,8 @@ void init_idt_desc(void *isr , uint8_t attribute, uint8_t entry);
 void set_idt(void);
 
 void init_exceptions();
+
+void enable_interrupts();
+void disable_interrupts();
 
 #endif // !INT_H

@@ -1,5 +1,5 @@
-#include "../includes/cpu/pic.h"
-#include "../includes/cpu/ports.h"
+#include <cpu/pic.h>
+#include <cpu/ports.h>
 
 void PIC_remap(int offset1, int offset2) {
     unsigned char a1, a2;
