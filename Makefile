@@ -2,15 +2,39 @@ CXX = i686-elf-g++
 CC  = i686-elf-gcc
 GDB = i386-elf-gdb
 
-CFLAGS   = -g -ffreestanding -O2 -Wall -Wextra -Iincludes
+CFLAGS  = -g -ffreestanding -O2 -Wall -Wextra -Iincludes
 CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
 
-C_SOURCES = $(wildcard drivers/*.cpp arch/x86/*/*.cpp arch/x86/*.cpp drivers/*/*.cpp cpu/*.cpp libc/*.cpp kernel/*.cpp tests/*.cpp kernel/*/*.cpp boot/*.cpp)
-ASM_SOURCES = $(wildcard cpu/*.asm kernel/mem/*.asm arch/x86/*.asm)
+C_SOURCES = $(wildcard \
+ arch/*.c \
+ arch/*/*.c \
+ arch/*/*/*.c \
+ arch/x86/*/*.cpp \
+ arch/x86/*.cpp \
+ drivers/*.cpp \
+ drivers/*/*.cpp \
+ cpu/*.cpp \
+ libc/*.cpp \
+ kernel/*.cpp \
+ kernel/*/*.cpp \
+ tests/*.cpp \
+ boot/*.cpp \
+ )
 
-HEADERS = $(wildcard includes/*.h includes/*/*.h includes/*/*/*.h includes/*/*/*/*.h)
+ASM_SOURCES = $(wildcard \
+ cpu/*.asm \
+ kernel/mem/*.asm \
+ arch/x86/*.asm)
 
-OBJ = $(patsubst %.cpp,%.o,$(C_SOURCES)) $(patsubst %.asm,%.o,$(ASM_SOURCES))
+HEADERS = $(wildcard \
+ includes/*.h \
+ includes/*/*.h \
+ includes/*/*/*.h \
+ includes/*/*/*/*.h)
+
+OBJ = $(patsubst %.cpp,%.o,$(filter %.cpp,$(C_SOURCES))) \
+      $(patsubst %.c,%.o,$(filter %.c,$(C_SOURCES))) \
+      $(patsubst %.asm,%.o,$(ASM_SOURCES))
 
 # Kernel ELF
 bin/kernel.elf: bin/multiboot.o $(OBJ)
@@ -39,11 +63,11 @@ run: iso
 
 # Compile C++
 %.o: %.cpp $(HEADERS)
-	$(CC) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Compile C
 %.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # Assemble .asm → .o (ELF)
 %.o: %.asm
