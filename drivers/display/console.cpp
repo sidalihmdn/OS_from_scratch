@@ -1,5 +1,6 @@
 #include <drivers/display/console.h>
 #include <boot/multiboot_helpers.h>
+#include <arch/cpu_control.h>
 #include <cpu/int.h>
 #include <unit_types.h>
 #include <drivers/display/vbe.h>
@@ -25,7 +26,7 @@ void console_init(multiboot_info_t* mb_info){
 }
 
 void console_put_char(char c){
-    disable_interrupts();
+    arch_disable_interrupts();
     if (c >= 32 && c <= 126){
         font_draw_char(cursor_x, cursor_y, cursor_color, c);
         cursor_x+=8;
@@ -36,7 +37,7 @@ void console_put_char(char c){
     */
     if (c == '\n'){
         cursor_x = CONSOLE_MARGIN;
-        cursor_y+=8;
+        cursor_y+=10;
     }
     if (c == '\t'){
         cursor_x+=32;
@@ -50,12 +51,12 @@ void console_put_char(char c){
 
     if (cursor_x >= screen_usable_width){
         cursor_x = CONSOLE_MARGIN;
-        cursor_y+=8;
+        cursor_y+=10;
     }
     if (cursor_y >= screen_usable_height){
         console_scroll();
     }
-    enable_interrupts();
+    arch_enable_interrupts();
 }
 
 void console_scroll(){

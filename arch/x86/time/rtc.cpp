@@ -1,5 +1,5 @@
 #include <arch/rtc.h>
-#include <cpu/ports.h>
+#include <arch/x86/io/ports.h>
 
 #define CMOS_PORT_ADDR 0x70
 #define CMOS_DATA 0x71
@@ -53,7 +53,7 @@ void arch_rtc_get_time(rtc_time_t* time){
      * the data is in BCD format, otherwise it is in binary format
      */
     uint8_t status_b = rtc_read_register(RTC_STATUS_B);
-    if (status_b & 0x04){
+    if (!(status_b & 0x04)){
         time->second = BCD_TO_BINARY(time->second);
         time->minute = BCD_TO_BINARY(time->minute);
         time->hour = BCD_TO_BINARY(time->hour);
@@ -73,6 +73,8 @@ void arch_rtc_set_time(rtc_time_t* time){
     rtc_write_register(RTC_REG_YEAR, time->year);
 }
 void arch_rtc_init(){
-    rtc_write_register(RTC_STATUS_B, 0x04);   
+    uint8_t status_b = rtc_read_register(RTC_STATUS_B);
+    status_b |= 0x02; 
+    rtc_write_register(RTC_STATUS_B, status_b);
 }
 

@@ -1,5 +1,5 @@
 #include <drivers/screen.h>
-#include <cpu/ports.h>
+#include <arch/x86/io/ports.h>
 
 // declarations
 void parse_offset(int &col , int &row , int offset);

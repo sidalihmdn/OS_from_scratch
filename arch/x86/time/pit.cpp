@@ -1,8 +1,7 @@
-#include <cpu/ports.h>
-#include <unit_types.h>
-#include <cpu/int.h>
-#include <cpu/pic.h>
+#include <arch/x86/io/ports.h>
+#include <arch/interrupt_controller.h>
 #include <arch/time.h>
+#include <unit_types.h>
 
 #define PIT_CHANNEL_0_DATA_PORT 0x40
 #define PIT_COMMAND_PORT 0x43
@@ -30,15 +29,15 @@ int arch_timer_init(uint32_t hz){
 }
 
 void arch_timer_eoi(void){
-    outb(0x20, 0x20);
+    arch_irq_send_eoi(0);
 }
 
 void arch_timer_enable(void){
-    PIC_clear_mask(0);
+    arch_irq_enable(0);
 }
  
 void arch_timer_disable(void){
-    PIC_set_mask(0);
+    arch_irq_disable(0);
 }
 
 uint64_t arch_timer_get_ticks(void){

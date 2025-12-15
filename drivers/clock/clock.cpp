@@ -54,6 +54,7 @@ void init_clock(){
         return;
     }
     arch_timer_enable();
+    arch_rtc_init();
 }
 
 void clock_set_handler(timer_callback_t handler){
