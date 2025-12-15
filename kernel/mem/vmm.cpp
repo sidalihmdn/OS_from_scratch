@@ -39,7 +39,7 @@ void init_vmm(multiboot_info_t* mb_info){
     
     /* map all memory regions to high memory */
     for (uint32_t i = 0; i < region_count; i++){
-        map_region(HIGH_MEMORY_BASE + offset, regions[i].addr, regions[i].len);
+        map_region(HIGH_MEMORY_BASE + regions[i].addr, regions[i].addr, regions[i].len);
         offset += regions[i].len;
     }
 
