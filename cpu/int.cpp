@@ -1,6 +1,7 @@
+#include <arch/interrupt_controller.h>
+#include <arch/cpu_control.h>
 #include <cpu/int.h>
-#include <cpu/pic.h>
-#include <cpu/ports.h>
+
 #include <drivers/screen.h>
 #include <drivers/keyboard.h>
 #include <libc/string.h>
@@ -38,7 +39,7 @@ void set_idt(void) {
     }
 
     // Remap the PIC
-    PIC_remap(32, 40);
+    arch_irq_controller_init(32, 40);
     
     // Install ISR handlers for CPU exceptions (0-31) and IRQs (32-47)
     for (uint8_t i = 0; i < 48; i++) {
@@ -46,10 +47,10 @@ void set_idt(void) {
     }
     
     // Load IDT
-    __asm__ volatile ("lidt %0" : : "m"(idtr));
+    arch_load_idt(&idtr);
     
     // Enable interrupts
-    __asm__ volatile ("sti");  // Commented out for now - causes crash with GRUB
+    arch_enable_interrupts();
 }
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {
@@ -70,10 +71,8 @@ extern "C" void isr_handler(registers_t regs) {
 
 extern "C" void irq_handler(registers_t regs) {
     // Send EOI to PIC
-    if (regs.int_no >= 40) {
-        outb(PIC2_COMMAND, PIC_EOI);
-    }
-    outb(PIC1_COMMAND, PIC_EOI);
+    uint8_t irq = regs.int_no - 32;
+    arch_irq_send_eoi(irq);
 
     if (interrupt_handlers[regs.int_no] != 0) {
         isr_t handler = interrupt_handlers[regs.int_no];
@@ -105,25 +104,10 @@ void isr13_handler(registers_t regs){
     exception_handler(regs, "General Protection Fault");
 }
 
-uint32_t get_cr2() {
-    uint32_t val;
-    asm volatile("mov %%cr2, %0" : "=r"(val));
-    return val;
-}
-
 void isr14_handler(registers_t regs){
-    printk("PAGE FAULT! Address: %x\n", get_cr2());
+    printk("PAGE FAULT! Address: %x\n", arch_get_fault_address());
     while(1);
 }
-
-void enable_interrupts(){
-    __asm__ volatile ("sti");
-}
-
-void disable_interrupts(){
-    __asm__ volatile ("cli");
-}
-
 
 void init_exceptions(){
     register_interrupt_handler(0, isr0_handler);

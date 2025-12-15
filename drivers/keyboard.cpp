@@ -1,7 +1,8 @@
 #include <drivers/keyboard.h>
-#include <cpu/ports.h>
+#include <arch/x86/io/ports.h>
+#include <arch/x86/interrupts/pic.h>
 #include <drivers/screen.h>
-#include <cpu/pic.h>
+#include <arch/interrupt_controller.h>
 #include <drivers/display/font.h>
 #include <drivers/display/vbe.h>
 #include <drivers/display/console.h>
@@ -90,5 +91,5 @@ if (!(scancode & 0x80)) {
 vbe_swap_buffer();
 
 // Send End of Interrupt to PIC
-PIC_sendEOI(1);
+arch_irq_send_eoi(1);
 }

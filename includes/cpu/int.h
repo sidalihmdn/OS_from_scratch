@@ -17,11 +17,6 @@ struct idt_entry_32 {
     uint16_t isr_addr_high;       // high address of the isr
 } __attribute__ ((packed));
 
-struct idtr_32{ 
-    uint16_t limite; 
-    uint32_t base; 
-}__attribute__ ((packed)); 
-
 struct idt_frame{ 
     uint32_t eip;  
     uint32_t cs; 

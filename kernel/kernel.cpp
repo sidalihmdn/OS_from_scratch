@@ -2,7 +2,6 @@
 #include <boot/multiboot_helpers.h>
 #include <libc/string.h>
 #include <cpu/int.h>
-#include <cpu/pic.h>
 #include <drivers/keyboard.h>
 #include <drivers/display/console.h>
 #include <drivers/display/vbe.h>
@@ -11,7 +10,10 @@
 #include <kernel/mem/vmm.h>
 #include <kernel/panic.h>
 #include <tests/libc_test.h>
-
+#include <tests/clock_timing_test.h>
+#include <drivers/clock/clock.h>
+#include <kernel/cpp/types.hpp>
+#include <kernel/cpp/unique_ptr.hpp>
 #if DEBUG
 //some debug code
 #endif
@@ -25,6 +27,10 @@ static uint32_t total_memory;
 void print_memory_map(multiboot_info_t* mb_info);
 void print_mem(mmap_entry_t* entry, void* context);
 
+void test_timer_callback(){
+    printk("Timer callback\n");
+}
+
 extern "C" void kernel_main(multiboot_info_t* mb_info){
     multiboot_info_t* multiboot_info = mb_info;
     total_memory = multiboot_get_total_memory(multiboot_info);
@@ -37,11 +43,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_vmm(multiboot_info);
     init_heap();
     console_init(multiboot_info);
-    printk("World");
-    
-    
-    
-    
+    init_clock();    
     // printk("Welcome to OS from Scratch!\n");
     // printk("Type 'help' for commands.\n");
     // printk("os > ");
@@ -56,12 +58,21 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
                 printk("  clear - Clear screen\n");
                 printk("  mem   - Show memory map\n");
                 printk("  test  - Run libc tests\n");
+                printk("  time  - display the time\n");
+                printk("  heap  - display the heap\n");
             } else if (strcmp(buffer, (char*)"clear") == 0) {
                 clean_screen();
             } else if (strcmp(buffer, (char*)"mem") == 0) {
                 print_memory_map(mb_info);
             }else if (strcmp(buffer, (char*)"test") == 0) {
                 run_libc_tests();
+            }else if (strcmp(buffer, (char*)"time") == 0) {
+                rtc_time_t* time = (rtc_time_t*)kmalloc(sizeof(rtc_time_t));
+                clock_get_date_time(time);
+                printk("Time: %d:%d:%d\n", time->hour, time->minute, time->second);
+                kfree(time);
+            }else if (strcmp(buffer, (char*)"heap") == 0) {
+                print_heap_info();
             }else if (len(buffer) > 0) {
                 printk("Unknown command: %s\n", buffer);
             }

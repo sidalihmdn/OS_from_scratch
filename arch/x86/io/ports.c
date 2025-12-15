@@ -1,3 +1,5 @@
+#include <arch/x86/io/ports.h>
+
 /**
  * Read a byte from the specified port
  */

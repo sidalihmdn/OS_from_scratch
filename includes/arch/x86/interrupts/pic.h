@@ -30,4 +30,12 @@ void PIC_remap(int offset1, int offset2);
 /// @param irq IRQ number
 void PIC_sendEOI(unsigned char irq);
 
+/// @brief Clear (enable/unmask) a specific IRQ line
+/// @param irq IRQ number (0-15)
+void PIC_clear_mask(unsigned char irq);
+
+/// @brief Set (disable/mask) a specific IRQ line
+/// @param irq IRQ number (0-15)
+void PIC_set_mask(unsigned char irq);
+
 #endif // PIC_H
