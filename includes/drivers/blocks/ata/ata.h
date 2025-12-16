@@ -18,8 +18,9 @@ typedef struct ata_device {
 } ata_device_t;
 
 
-void ata_read(uint64_t lba, void* buffer, uint32_t size);
-void ata_write(uint64_t lba, void* buffer, uint32_t size);
+void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size);
+void ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size);
+ata_device_t* ata_get_device(uint8_t index);
 
 void ata_init();
 
