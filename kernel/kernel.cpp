@@ -1,6 +1,7 @@
 #include <drivers/screen.h>
 #include <boot/multiboot_helpers.h>
 #include <libc/string.h>
+#include <libc/mem.h>
 #include <cpu/int.h>
 #include <drivers/keyboard.h>
 #include <drivers/display/console.h>
@@ -62,31 +63,6 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
                 printk("  test  - Run libc tests\n");
                 printk("  time  - display the time\n");
                 printk("  heap  - display the heap\n");
-                printk("  read  - test ATA read (Sector 0)\n");
-                printk("  write - test ATA write (Sector 0)\n");
-            } else if (strcmp(buffer, (char*)"read") == 0) {
-                 ata_device_t* dev = ata_get_device(0);
-                 if (dev->flags & 0x01) {
-                     uint16_t* sector = (uint16_t*)kmalloc(512);
-                     printk("ATA Sector 0 Data: ");
-                     ata_read_lba28(dev, 0, sector, 512);
-                     printk("Sector 0 Data: ");
-
-                     for(int i=0; i<100; i++) printk("%x ", ((uint32_t*)sector)[i]);
-                     printk("\n");
-                     kfree(sector);
-                 } else {
-                     printk("Primary Master not found.\n");
-                 }
-            } else if (strcmp(buffer, (char*)"write") == 0) {
-                 ata_device_t* dev = ata_get_device(0);
-                 if (dev->flags & 0x01) {
-                     uint16_t* sector = (uint16_t*)"ATA Sector 0 Data: deedede";
-                     printk("ATA Sector 0 Data: ");
-                     ata_write_lba28(dev, 0, sector, 26);
-                 } else {
-                     printk("Primary Master not found.\n");
-                 }
             } else if (strcmp(buffer, (char*)"clear") == 0) {
                 clean_screen();
             } else if (strcmp(buffer, (char*)"mem") == 0) {
