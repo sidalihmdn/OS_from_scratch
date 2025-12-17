@@ -15,6 +15,7 @@ C_SOURCES = $(wildcard \
  drivers/*/*.cpp \
  drivers/*/*/*.cpp \
  drivers/*/*/*.c \
+ drivers/*/*.c \
  cpu/*.cpp \
  libc/*.cpp \
  kernel/*.cpp \
