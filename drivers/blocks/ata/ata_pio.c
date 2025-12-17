@@ -3,6 +3,7 @@
 #include <arch/x86/io/ports.h>
 #include <arch/cpu_control.h>
 #include <arch/interrupt_controller.h>
+#include <drivers/blocks/block_device.h>
 #include <cpu/int.h>
 #include <libc/string.h>
 #include <libc/log.h>
@@ -75,7 +76,10 @@ flags
 * ATA Functions
 */
 ata_device_t* ata_get_device(uint8_t index);
+void ata_read_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size);
+void ata_write_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size);
 void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size);
+void ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size);
 static void ata_select_drive(ata_device_t* device);
 static uint8_t ata_read_status(ata_device_t* device);
 static void ata_identify(ata_device_t* device);
@@ -86,6 +90,14 @@ void ata_secondary_irq_handler(registers_t regs);
 static ata_device_t* devices;
 static uint8_t ata_primary_irq;
 static uint8_t ata_secondary_irq;
+
+void ata_read_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+    ata_read_lba28((ata_device_t*)device->data, lba, buffer, size);
+}
+
+void ata_write_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+    ata_write_lba28((ata_device_t*)device->data, lba, buffer, size);
+}
 
 static void ata_init_device(ata_device_t* device, uint16_t base, uint16_t control, uint8_t slave){
     device->base = base;
@@ -106,10 +118,19 @@ void ata_init(){
     ata_init_device(&devices[1], ATA_PRIMARY_BASE, ATA_PRIMARY_CONTROL, ATA_SLAVE_DRIVE);
     ata_init_device(&devices[2], ATA_SECONDARY_BASE, ATA_SECONDARY_CONTROL, ATA_MASTER_DRIVE);
     ata_init_device(&devices[3], ATA_SECONDARY_BASE, ATA_SECONDARY_CONTROL, ATA_SLAVE_DRIVE);
-    ata_identify(&devices[0]);
-    ata_identify(&devices[1]);
-    ata_identify(&devices[2]);
-    ata_identify(&devices[3]);
+    
+    for (int i = 0; i < 4; i++){
+        ata_identify(&devices[i]);
+        if (devices[i].flags & ATA_FLAG_PRESENT){
+            block_device_t* block_device = (block_device_t*)kmalloc(sizeof(block_device_t));
+            block_device->block_count = devices[i].sector_count;
+            block_device->block_size = devices[i].sector_size;
+            block_device->read = ata_read_block;
+            block_device->write = ata_write_block;
+            block_device->data = &devices[i];
+            block_device_register(block_device);
+        }
+    }
 
     register_interrupt_handler(ATA_PRIMARY_IRQ + 32, ata_primary_irq_handler);
     register_interrupt_handler(ATA_SECONDARY_IRQ + 32, ata_secondary_irq_handler);
@@ -237,6 +258,10 @@ ata_device_t* ata_get_device(uint8_t index){
 }
 
 void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+    
+    volatile uint8_t* irq_flag = NULL;
+    uint32_t sector_count = (size+511)/512;
+
     /*
     select the correct drive
     */
@@ -247,7 +272,7 @@ void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t s
     set the sector count, LBAlo, LBAmid, LBAhi registers
     */
     outb(device->base + ATA_DRIVE_HEAD_REG, 0xE0 | (device->slave<<4) | ((lba>>24)&0x0F));
-    outb(device->base + ATA_SEC_COUNT_REG, (size+511)/512);
+    outb(device->base + ATA_SEC_COUNT_REG, sector_count);
     outb(device->base + ATA_LBA_LOW_REG, ((uint8_t)lba));
     outb(device->base + ATA_LBA_MID_REG, ((uint8_t)(lba >> 8)));
     outb(device->base + ATA_LBA_HIGH_REG, ((uint8_t)(lba >> 16)));
@@ -255,7 +280,6 @@ void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t s
     /*
     set up the right irq flag
     */
-    volatile uint8_t* irq_flag = NULL;
     if (device->base == ATA_PRIMARY_BASE){
         irq_flag = &ata_primary_irq;
     }else{
@@ -277,7 +301,6 @@ void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t s
     /*
     read the data
     */
-    uint32_t sector_count = (size+511)/512;
     for (uint32_t i = 0; i < sector_count; i++){
         while (*irq_flag == 0){
             LOG_F("ATA Read LBA28: %d", lba);
