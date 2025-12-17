@@ -1,10 +1,12 @@
 #include <drivers/screen.h>
 #include <boot/multiboot_helpers.h>
 #include <libc/string.h>
+#include <libc/mem.h>
 #include <cpu/int.h>
 #include <drivers/keyboard.h>
 #include <drivers/display/console.h>
 #include <drivers/display/vbe.h>
+#include <drivers/blocks/ata/ata.h>
 #include <kernel/mem/heap.h> 
 #include <kernel/mem/pmm.h>
 #include <kernel/mem/vmm.h>
@@ -43,7 +45,8 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_vmm(multiboot_info);
     init_heap();
     console_init(multiboot_info);
-    init_clock();    
+    init_clock();
+    ata_init();
     // printk("Welcome to OS from Scratch!\n");
     // printk("Type 'help' for commands.\n");
     // printk("os > ");
