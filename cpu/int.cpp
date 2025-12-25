@@ -1,12 +1,21 @@
 #include <arch/interrupt_controller.h>
 #include <arch/cpu_control.h>
 #include <cpu/int.h>
-
+#include <kernel/init.h>
 #include <drivers/screen.h>
 #include <drivers/keyboard.h>
 #include <libc/string.h>
+#include "int_internals.h"
 
 #define IDT_SIZE 256
+
+/**
+ * @brief Initialize interrupts
+ */
+void init_interrupts(){
+    set_idt();
+    init_exceptions();
+}
 
 // IDT entries array
 idt_entry_32 idt[IDT_SIZE];
