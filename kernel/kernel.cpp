@@ -1,12 +1,10 @@
-#include <drivers/screen.h>
 #include <boot/multiboot_helpers.h>
 #include <libc/string.h>
 #include <libc/mem.h>
-#include <cpu/int.h>
+#include <kernel/init.h>
 #include <drivers/keyboard.h>
 #include <drivers/display/console.h>
 #include <drivers/display/vbe.h>
-#include <drivers/blocks/ata/ata.h>
 #include <kernel/mem/heap.h> 
 #include <kernel/mem/pmm.h>
 #include <kernel/mem/vmm.h>
@@ -14,8 +12,8 @@
 #include <tests/libc_test.h>
 #include <tests/clock_timing_test.h>
 #include <drivers/clock/clock.h>
-#include <kernel/cpp/types.hpp>
-#include <kernel/cpp/unique_ptr.hpp>
+#include <drivers/blocks/ata/ata.h>
+#include <drivers/blocks/block_device.h>
 #if DEBUG
 //some debug code
 #endif
@@ -37,10 +35,8 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     multiboot_info_t* multiboot_info = mb_info;
     total_memory = multiboot_get_total_memory(multiboot_info);
     load_gdt();  // Load our own GDT before anything else
-    set_idt();
-    init_exceptions();
+    init_interrupts();
     init_keyboard();
-    clean_screen();
     init_pmm(multiboot_info);
     init_vmm(multiboot_info);
     init_heap();
@@ -64,7 +60,7 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
                 printk("  time  - display the time\n");
                 printk("  heap  - display the heap\n");
             } else if (strcmp(buffer, (char*)"clear") == 0) {
-                clean_screen();
+                vbe_clear_screen(vbe_rgb(0, 0, 0));
             } else if (strcmp(buffer, (char*)"mem") == 0) {
                 print_memory_map(mb_info);
             }else if (strcmp(buffer, (char*)"test") == 0) {

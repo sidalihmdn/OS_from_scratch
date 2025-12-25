@@ -1,5 +1,6 @@
 #include <kernel/mem/pmm.h>
 #include <libc/string.h>
+#include <libc/mem.h>
 #include <libc/log.h>
 #include <boot/multiboot_helpers.h>
 #include <kernel/mem/pages_struct.h>
@@ -30,7 +31,7 @@ void init_pmm(multiboot_info_t* mb_info){
     max_frames = total_memory / PAGE_SIZE;
     bitmap_size = ((max_frames + 31) / 32) * sizeof(uint32_t);
     
-    mset(bitmap, 0xFF, bitmap_size); 
+    memset(bitmap, 0xFF, bitmap_size); 
 
     memory_region_t regions[32];
     uint32_t region_count = multiboot_get_usable_regions(mb_info, regions, 32);
@@ -82,13 +83,6 @@ void pmm_reserve_region(uint64_t addr, uint64_t size){
     // LOG_F("pmm_reserve_region: start : %d end : %d\n", (uint32_t)start, (uint32_t)end);
     for (uint64_t i = start; i < end; i++){
         SET_BIT(i);
-    }
-}
-
-void mset(void* ptr, int value, uint32_t size){
-    uint8_t* p = (uint8_t*)ptr;
-    for (uint32_t i = 0; i < size; i++) {
-        p[i] = value;
     }
 }
 

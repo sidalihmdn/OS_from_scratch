@@ -5,6 +5,8 @@
 #include <kernel/mem/pmm.h>
 #include <kernel/mem/vmm.h>
 #include <libc/string.h>
+#include <libc/mem.h>
+#include "vmm_internals.h"
 
 // assembly helper functions
 extern "C" void load_page_directory(uint32_t* page_directory);
@@ -20,8 +22,11 @@ void flush_tlb(uintptr_t virtual_address);
 void init_vmm(multiboot_info_t* mb_info){
     uint32_t offset = 0;
 
+    volatile uintptr_t framebuffer_addr = (uintptr_t)mb_info->framebuffer_addr;
+    volatile uint32_t framebuffer_size = mb_info->framebuffer_pitch * mb_info->framebuffer_height;
+
     /* initialize the page directory */
-    mset((void*)page_directory, 0, 4096);
+    memset((void*)page_directory, 0, 4096);
 
     /* identity map the first 1MB */
     map_region(0, 0, 1024*1024*4);
@@ -45,6 +50,9 @@ void init_vmm(multiboot_info_t* mb_info){
 
     /* identity map the VGA memory */
     map_region(0xB8000, 0xB8000, 4096);
+
+    /* map the framebuffer */
+    map_region(VIDEO_VRT_ADDR, framebuffer_addr, framebuffer_size);
 
     /* load the page directory and enable paging */
     load_page_directory(page_directory);
@@ -149,7 +157,7 @@ uintptr_t alloc_page_table(){
         return 0;
     }
     /* set the page table to 0 */
-    mset((void*)page_table, 0, 4096);
+    memset((void*)page_table, 0, 4096);
     return (uintptr_t)page_table;
 }
 

@@ -3,6 +3,8 @@
 #include <libc/log.h>
 #include <kernel/mem/vmm.h>
 #include <kernel/mem/pmm.h>
+#include "heap_internals.h"
+#include "vmm_internals.h"
 
 extern uint32_t kernel_end;
 static uintptr_t heap_limit;

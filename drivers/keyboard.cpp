@@ -1,6 +1,5 @@
 #include <drivers/keyboard.h>
 #include <arch/x86/io/ports.h>
-#include <arch/x86/interrupts/pic.h>
 #include <drivers/screen.h>
 #include <arch/interrupt_controller.h>
 #include <drivers/display/font.h>
@@ -44,9 +43,7 @@ while (inb(KEYBOARD_STATUS_PORT) & 0x01) {
 }
 
 // Enable keyboard interrupts (unmask IRQ1)
-unsigned char mask = inb(PIC1_DATA);
-mask &= ~(1 << 1); // Clear bit 1 (IRQ1)
-outb(PIC1_DATA, mask);
+arch_irq_enable(1);
 
 buffer_pos = 0;
 line_ready = false;

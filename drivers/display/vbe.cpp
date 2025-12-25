@@ -1,7 +1,6 @@
 #include <drivers/display/vbe.h>
 #include <boot/multiboot_helpers.h>
 #include <unit_types.h>
-#include <kernel/mem/vmm.h>
 #include <kernel/mem/heap.h>
 #include <libc/log.h>
 #include <libc/mem.h>
@@ -12,10 +11,8 @@ static multiboot_info_t* multiboot_info;
 
 void vbe_init(multiboot_info_t* mb_info){
     multiboot_info = mb_info;
-    uintptr_t framebuffer_addr = (uintptr_t)multiboot_info->framebuffer_addr;
     size = multiboot_info->framebuffer_pitch * multiboot_info->framebuffer_height;
     
-    map_region(VIDEO_VRT_ADDR, framebuffer_addr, size);
     /*
     * allocate 3 time the size of the buffer so we can keep some history
     */
