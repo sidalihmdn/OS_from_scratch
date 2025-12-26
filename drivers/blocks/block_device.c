@@ -1,4 +1,4 @@
-#include <drivers/blocks/block_device.h>
+#include <drivers/block_device.h>
 #include <libc/log.h>
 
 #define MAX_BLOCK_DEVICES 16
