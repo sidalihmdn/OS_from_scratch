@@ -2,9 +2,11 @@
 #define CLOCK_H
 
 #include <unit_types.h>
+#include <kernel/driver.h>
 #include <arch/rtc.h>
 
 typedef void (*timer_callback_t)(void);
+extern driver_t clock_driver;
 
 void init_clock();
 void clock_set_handler(timer_callback_t handler);
@@ -16,7 +18,7 @@ void clock_sleep_s(uint32_t s);
 
 void clock_get_date_time(rtc_time_t* time);
 void clock_set_date_time(rtc_time_t* time);
-
+uint64_t clock_get_unix_timestamp();
 typedef int timer_id_t;
 timer_id_t clock_create_timer(uint32_t ms, timer_callback_t callback);
 void clock_destroy_timer(timer_id_t timer_id);

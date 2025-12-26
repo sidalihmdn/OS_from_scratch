@@ -16,5 +16,4 @@ void arch_rtc_get_time(rtc_time_t* time);
 void arch_rtc_set_time(rtc_time_t* time);
 bool arch_rtc_is_updating();
 
-
 #endif

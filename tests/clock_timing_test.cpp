@@ -1,4 +1,4 @@
-#include <drivers/clock/clock.h>
+#include <drivers/clock.h>
 #include <drivers/display/console.h>
 #include <libc/string.h>
 
