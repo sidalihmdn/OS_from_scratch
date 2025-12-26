@@ -1,84 +1,141 @@
-CXX = i686-elf-g++
-CC  = i686-elf-gcc
-GDB = i386-elf-gdb
+# ============================================
+# Toolchain
+# ============================================
+CXX      := i686-elf-g++
+CC       := i686-elf-gcc
+AS       := nasm
+LD       := i686-elf-ld
+GDB      := i386-elf-gdb
 
-CFLAGS  = -g -ffreestanding -O2 -Wall -Wextra -Iincludes
-CXXFLAGS = $(CFLAGS) -fno-exceptions -fno-rtti
+# ============================================
+# Directories
+# ============================================
+BUILD_DIR := build
+OBJ_DIR   := $(BUILD_DIR)/obj
+BIN_DIR   := $(BUILD_DIR)/bin
+ISO_DIR   := $(BUILD_DIR)/iso
 
-C_SOURCES = $(wildcard \
- arch/*.c \
- arch/*/*.c \
- arch/*/*/*.c \
- arch/x86/*/*.cpp \
- arch/x86/*.cpp \
- drivers/*.cpp \
- drivers/*/*.cpp \
- drivers/*/*/*.cpp \
- drivers/*/*/*.c \
- drivers/*/*.c \
- cpu/*.cpp \
- libc/*.cpp \
- kernel/*.cpp \
- kernel/*/*.cpp \
- tests/*.cpp \
- boot/*.cpp \
- )
+# ============================================
+# Flags
+# ============================================
+WARNINGS := -Wall -Wextra -Werror=return-type
+CFLAGS   := -g -ffreestanding -O2 $(WARNINGS) -Iincludes -MMD -MP
+CXXFLAGS := $(CFLAGS) -fno-exceptions -fno-rtti -fno-use-cxa-atexit
+ASFLAGS  := -f elf
+LDFLAGS  := -T linker.ld
 
-ASM_SOURCES = $(wildcard \
- cpu/*.asm \
- kernel/mem/*.asm \
- arch/x86/*.asm)
+# ============================================
+# Source Files
+# ============================================
+# Explicitly list source directories (more maintainable than wildcards)
+C_DIRS := \
+	arch/x86/cpu \
+	arch/x86/interrupts \
+	arch/x86/io \
+	drivers/blocks/ata \
+	drivers/blocks \
+	kernel/driver \
+	kernel/mem
 
-HEADERS = $(wildcard \
- includes/*.h \
- includes/*/*.h \
- includes/*/*/*.h \
- includes/*/*/*/*.h)
+CPP_DIRS := \
+	arch/x86/time \
+	drivers \
+	drivers/clock \
+	drivers/display \
+	kernel \
+	kernel/mem \
+	cpu \
+	libc \
+	tests \
+	boot
 
-OBJ = $(patsubst %.cpp,%.o,$(filter %.cpp,$(C_SOURCES))) \
-      $(patsubst %.c,%.o,$(filter %.c,$(C_SOURCES))) \
-      $(patsubst %.asm,%.o,$(ASM_SOURCES))
+ASM_DIRS := \
+	cpu \
+	kernel/mem
 
-# Kernel ELF
-bin/kernel.elf: bin/multiboot.o $(OBJ)
-	i686-elf-ld -o $@ -T linker.ld bin/multiboot.o $(OBJ)
+# Find all source files
+C_SOURCES   := $(foreach dir,$(C_DIRS),$(wildcard $(dir)/*.c))
+CPP_SOURCES := $(foreach dir,$(CPP_DIRS),$(wildcard $(dir)/*.cpp))
+ASM_SOURCES := $(foreach dir,$(ASM_DIRS),$(wildcard $(dir)/*.asm))
 
-bin/multiboot.o: boot/multiboot.asm
-	mkdir -p bin
-	nasm $< -f elf -o $@
+# Generate object file paths
+C_OBJECTS   := $(patsubst %.c,$(OBJ_DIR)/%.o,$(C_SOURCES))
+CPP_OBJECTS := $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(CPP_SOURCES))
+ASM_OBJECTS := $(patsubst %.asm,$(OBJ_DIR)/%.o,$(ASM_SOURCES))
 
-# ISO generation
-iso: bin/kernel.elf
-	mkdir -p build/iso/boot/grub
-	cp bin/kernel.elf build/iso/boot/
-	cp build/iso/boot/grub/grub.cfg build/iso/boot/grub/grub.cfg.bak 2>/dev/null || true
-	echo 'set timeout=0' > build/iso/boot/grub/grub.cfg
-	echo 'set default=0' >> build/iso/boot/grub/grub.cfg
-	echo '' >> build/iso/boot/grub/grub.cfg
-	echo 'menuentry "OS from Scratch" {' >> build/iso/boot/grub/grub.cfg
-	echo '    multiboot /boot/kernel.elf' >> build/iso/boot/grub/grub.cfg
-	echo '    boot' >> build/iso/boot/grub/grub.cfg
-	echo '}' >> build/iso/boot/grub/grub.cfg
-	i686-elf-grub-mkrescue -o os.iso build/iso
+ALL_OBJECTS := $(C_OBJECTS) $(CPP_OBJECTS) $(ASM_OBJECTS) $(OBJ_DIR)/boot/multiboot.o
 
+# Dependency files (for header tracking)
+DEPS := $(ALL_OBJECTS:.o=.d)
+
+# ============================================
+# Targets
+# ============================================
+.PHONY: all clean iso run debug
+
+all: $(BIN_DIR)/kernel.elf
+
+# Link kernel
+$(BIN_DIR)/kernel.elf: $(ALL_OBJECTS) | $(BIN_DIR)
+	@echo "LD  $@"
+	@$(LD) $(LDFLAGS) -o $@ $(ALL_OBJECTS)
+
+# Compile C files
+$(OBJ_DIR)/%.o: %.c | $(OBJ_DIR)
+	@mkdir -p $(dir $@)
+	@echo "CXX  $<"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Compile C++ files
+$(OBJ_DIR)/%.o: %.cpp | $(OBJ_DIR)
+	@mkdir -p $(dir $@)
+	@echo "CXX $<"
+	@$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Assemble ASM files
+$(OBJ_DIR)/%.o: %.asm | $(OBJ_DIR)
+	@mkdir -p $(dir $@)
+	@echo "AS  $<"
+	@$(AS) $(ASFLAGS) $< -o $@
+
+# Create directories
+$(BIN_DIR) $(OBJ_DIR):
+	@mkdir -p $@
+
+# Generate ISO
+iso: $(BIN_DIR)/kernel.elf
+	@echo "Creating ISO..."
+	@mkdir -p $(ISO_DIR)/boot/grub
+	@cp $(BIN_DIR)/kernel.elf $(ISO_DIR)/boot/
+	@echo 'set timeout=0' > $(ISO_DIR)/boot/grub/grub.cfg
+	@echo 'set default=0' >> $(ISO_DIR)/boot/grub/grub.cfg
+	@echo '' >> $(ISO_DIR)/boot/grub/grub.cfg
+	@echo 'menuentry "OS from Scratch" {' >> $(ISO_DIR)/boot/grub/grub.cfg
+	@echo '    multiboot /boot/kernel.elf' >> $(ISO_DIR)/boot/grub/grub.cfg
+	@echo '    boot' >> $(ISO_DIR)/boot/grub/grub.cfg
+	@echo '}' >> $(ISO_DIR)/boot/grub/grub.cfg
+	@i686-elf-grub-mkrescue -o os.iso $(ISO_DIR) 2>&1 | grep -v "xorriso"
+
+# Run in QEMU
 run: iso
-	qemu-system-i386 -cdrom os.iso
+	qemu-system-i386 -cdrom os.iso -hda hdd2.img
 
-# Compile C++
-%.o: %.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+# Debug with GDB
+debug: iso
+	qemu-system-i386 -s -S -cdrom os.iso -hda hdd2.img &
+	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file $(BIN_DIR)/kernel.elf"
 
-# Compile C
-%.o: %.c $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Assemble .asm → .o (ELF)
-%.o: %.asm
-	nasm $< -f elf -o $@
-
-debug: bin/kernel.elf
-	qemu-system-i386 -s -S -cdrom os.iso &
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file bin/kernel.elf"
-
+# Clean build artifacts
 clean:
-	rm -rf $(OBJ) */*.bin */*.elf */*.o */*/*.o os.iso build/iso
+	@echo "Cleaning..."
+	@rm -rf $(BUILD_DIR) os.iso
+
+# Include dependency files (for header tracking)
+-include $(DEPS)
+
+# Print build info
+info:
+	@echo "C sources:   $(words $(C_SOURCES))"
+	@echo "C++ sources: $(words $(CPP_SOURCES))"
+	@echo "ASM sources: $(words $(ASM_SOURCES))"
+	@echo "Total:       $(words $(ALL_OBJECTS))"
