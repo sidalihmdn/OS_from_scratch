@@ -1,5 +1,6 @@
-#include <drivers/clock/clock.h>
+#include <drivers/clock.h>
 #include <arch/time.h>
+#include <kernel/driver.h>
 #include <arch/rtc.h>
 #include <cpu/int.h>
 
@@ -16,9 +17,9 @@ typedef struct timer_event_t {
     uint64_t delay;
     bool active;
     timer_callback_t callback;
-};
+}timer_event_t;
 
-static struct timer_event_t g_timers[MAX_TIMERS];
+static timer_event_t g_timers[MAX_TIMERS];
 
 
 
@@ -114,8 +115,45 @@ void clock_get_date_time(rtc_time_t* time){
     arch_rtc_get_time(time);
 }
 
+uint64_t clock_get_unix_timestamp(){
+    rtc_time_t time;
+    arch_rtc_get_time(&time);
+    static const int days_in_month[] = {
+        31, 28, 31, 30, 31, 30,
+        31, 31, 30, 31, 30, 31
+    };
+
+    uint64_t days = 0;
+    for (int year = 1970; year < (time.year + 2000); year++){
+        days += 365;
+        if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)){
+            days += 1;
+        }
+    }
+    for (int month = 1; month < time.month; month++){
+        days += days_in_month[month - 1];
+        if (month == 2){
+            int year = time.year + 2000;
+            if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)){
+                days += 1;
+            }
+        }
+    }
+
+    days += (time.day - 1);
+
+    return days * 86400 + time.hour * 3600 + time.minute * 60 + time.second;
+}
+
 void clock_set_date_time(rtc_time_t* time){
     arch_rtc_set_time(time);
 }
+
+driver_t clock_driver = {
+    .name = "clock",
+    .init = init_clock,
+    .exit = NULL,
+};
+
 
     
