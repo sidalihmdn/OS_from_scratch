@@ -7,7 +7,7 @@ typedef struct heap_block_t {
     bool is_free;
     struct heap_block_t* next;
     struct heap_block_t* prev;
-};
+} heap_block_t;
 
 void* expand_heap(uintptr_t size, heap_block_t* last_block);
 void coalesce_free_blocks();

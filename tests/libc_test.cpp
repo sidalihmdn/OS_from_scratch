@@ -14,7 +14,7 @@ void test_string() {
     }
     
     // Test strcmp
-    if (strcmp("abc", "abc") == 0 && strcmp("abc", "abd") != 0) {
+    if (strcmp((char*)"abc", (char*)"abc") == 0 && strcmp((char*)"abc", (char*)"abd") != 0) {
         printk("  strcmp: OK\n");
     } else {
         printk("  strcmp: FAIL\n");
@@ -23,7 +23,7 @@ void test_string() {
     // Test int2String
     // Note: int2String returns a static buffer, so we copy it to check
     char* s = int2String(123);
-    if (strcmp(s, "123") == 0) {
+    if (strcmp(s, (char*)"123") == 0) {
         printk("  int2String: OK\n");
     } else {
         printk("  int2String: FAIL\n");
@@ -41,6 +41,8 @@ void test_memory() {
     } else {
         printk("  PMM: FAIL\n");
     }
+    pmm_free_page(page2);
+    pmm_free_page(page3);
 }
 
 void run_libc_tests() {

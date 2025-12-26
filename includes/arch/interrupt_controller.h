@@ -28,10 +28,4 @@ void arch_irq_disable(uint8_t irq);
  */
 void arch_irq_send_eoi(uint8_t irq);
 
-/**
- * @brief Load the IDT
- * @param idtr Pointer to the IDTR structure
- */
-void arch_load_idt(uintptr_t* idtr);
-
 #endif
