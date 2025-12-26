@@ -1,14 +1,16 @@
-#include <drivers/blocks/ata/ata.h>
-#include <kernel/mem/heap.h>
-#include <arch/x86/io/ports.h>
 #include <arch/cpu_control.h>
+#include <arch/x86/io/ports.h>
 #include <arch/interrupt_controller.h>
-#include <drivers/blocks/block_device.h>
 #include <cpu/int.h>
-#include <libc/string.h>
+#include <drivers/ata.h>
+#include <drivers/block_device.h>
+#include <kernel/driver.h>
+#include <kernel/mem/heap.h>
 #include <libc/log.h>
-#include "const.h"
+#include <libc/string.h>
+#include <errno.h>
 #include "ata_internals.h"
+#include "consts.h"
 
 
 ata_device_t* ata_get_device(uint8_t index);
@@ -18,12 +20,12 @@ static ata_device_t* devices;
 static uint8_t ata_primary_irq;
 static uint8_t ata_secondary_irq;
 
-void ata_read_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size){
-    ata_read_lba28((ata_device_t*)device->data, lba, buffer, size);
+int ata_read_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+    return ata_read_lba28((ata_device_t*)device->data, lba, buffer, size);
 }
 
-void ata_write_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size){
-    ata_write_lba28((ata_device_t*)device->data, lba, buffer, size);
+int ata_write_block(block_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+    return ata_write_lba28((ata_device_t*)device->data, lba, buffer, size);
 }
 
 static void ata_init_device(ata_device_t* device, uint16_t base, uint16_t control, uint8_t slave){
@@ -47,7 +49,10 @@ void ata_init(){
     ata_init_device(&devices[3], ATA_SECONDARY_BASE, ATA_SECONDARY_CONTROL, ATA_SLAVE_DRIVE);
     
     for (int i = 0; i < 4; i++){
-        ata_identify(&devices[i]);
+        int result = ata_identify(&devices[i]);
+        if (result < 0) {
+            continue;
+        }
         if (devices[i].flags & ATA_FLAG_PRESENT){
             block_device_t* block_device = (block_device_t*)kmalloc(sizeof(block_device_t));
             block_device->block_count = devices[i].sector_count;
@@ -66,7 +71,13 @@ void ata_init(){
     arch_enable_interrupts();
 }
 
-void ata_identify(ata_device_t* device){
+void ata_exit(){
+    arch_disable_interrupts();
+    kfree(devices);
+    arch_enable_interrupts();
+}
+
+int ata_identify(ata_device_t* device){
     /*
     select the correct drive
     */
@@ -76,8 +87,7 @@ void ata_identify(ata_device_t* device){
     floating bud check
     */
     if (ata_read_status(device) == 0xFF){
-        LOG_ERROR("ATA Identify failed");
-        return;
+        return -EIO;
     }
 
     /*
@@ -97,7 +107,7 @@ void ata_identify(ata_device_t* device){
     read status register to see if the drive exists
     */
     if (ata_read_status(device) == 0){
-        return;
+        return -EIO;
     }
 
     /*
@@ -113,7 +123,7 @@ void ata_identify(ata_device_t* device){
         the device is not a ATA device
         TODO : handle this case
         */
-        return;
+        return -EIO;
     }
     /*
     wait for the DRQ bit to set or error to set
@@ -124,7 +134,7 @@ void ata_identify(ata_device_t* device){
     if error, return
     */
     if (ata_read_status(device) & ATA_STATUS_ERR){
-        return;
+        return -EIO;
     }
 
     /*
@@ -144,7 +154,7 @@ void ata_identify(ata_device_t* device){
         device->model[i] = (buffer[27+(i/2)]>>8) & 0xFF;
         device->model[i+1] = buffer[27+(i/2)] & 0xFF;
     }
-    device->model[41] = '\0';
+    device->model[40] = '\0';
 
     if (buffer[83] & (1<<10)){
         device->flags |= ATA_FLAG_LBA48;
@@ -165,6 +175,7 @@ void ata_identify(ata_device_t* device){
           device->sector_count, 
           (uint32_t)(device->sector_count * 512) / 1024 / 1024);
     kfree(buffer);
+    return 0;
 }
 
 void ata_select_drive(ata_device_t* device){
@@ -184,17 +195,28 @@ ata_device_t* ata_get_device(uint8_t index){
     return &devices[index];
 }
 
-void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+int ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size){
     
     volatile uint8_t* irq_flag = NULL;
     uint32_t sector_count = (size+511)/512;
+
+    if ( device == NULL || buffer == NULL ){
+        return -EINVAL;
+    }
+
+    if (lba > 0x0FFFFFFF){
+        return -EINVAL;
+    }
+
+    if (sector_count > 256){
+        return -EINVAL;
+    }
 
     /*
     select the correct drive
     */
     ata_select_drive(device);
     while (ata_read_status(device) & ATA_STATUS_BSY){}
-    LOG_F("ATA Read LBA28: %d", lba);
     /*
     set the sector count, LBAlo, LBAmid, LBAhi registers
     */
@@ -214,7 +236,6 @@ void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t s
     }
     *irq_flag = 0;
 
-    LOG_F("ATA Read LBA28: %d", lba);
     /*
     send the read command
     */
@@ -223,23 +244,33 @@ void ata_read_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t s
     /*
     wait for the BSY bit to clear
     */
-    while (ata_read_status(device) & ATA_STATUS_BSY){}
-    LOG_F("ATA Read LBA28: %d", lba);
+    while (1){
+        uint8_t status = ata_read_status(device);
+        if (status & ATA_STATUS_ERR) return -EIO;
+        if (!(status & ATA_STATUS_BSY) && (status & ATA_STATUS_DRQ)){
+            break;
+        }
+    }
     /*
     read the data
     */
     for (uint32_t i = 0; i < sector_count; i++){
+        uint32_t timeout = 5000;
         while (*irq_flag == 0){
-            LOG_F("ATA Read LBA28: %d", lba);
             arch_halt();
+            if (--timeout == 0){
+                return -EIO;
+            }
         }
         *irq_flag = 0;
         for (uint32_t j = 0; j < 256; j++){
             ((uint16_t*)buffer)[i*256 + j] = inw(device->base + ATA_RW_REG);
         }
     }
+    return 0;
 }
-void ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size){
+
+int ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t size){
     uint32_t sector_count = (size+511)/512;
     uint16_t* sector_buffer = (uint16_t*)buffer;
     /*
@@ -262,8 +293,10 @@ void ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t 
     volatile uint8_t* irq_flag = NULL;
     if (device->base == ATA_PRIMARY_BASE){
         irq_flag = &ata_primary_irq;
-    }else{
+    }else if (device->base == ATA_SECONDARY_BASE){
         irq_flag = &ata_secondary_irq;
+    }else{
+        return -EINVAL;
     }
     *irq_flag = 0;
 
@@ -280,7 +313,7 @@ void ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t 
         */
         while (1){
             uint8_t status = ata_read_status(device);
-            if (status & ATA_STATUS_ERR) return;
+            if (status & ATA_STATUS_ERR) return -EIO;
             if (!(status & ATA_STATUS_BSY) && (status & ATA_STATUS_DRQ)){
                 break;
             }
@@ -302,18 +335,23 @@ void ata_write_lba28(ata_device_t* device, uint64_t lba, void* buffer, uint32_t 
         arch_halt();
     }
     *irq_flag = 0;
+    return 0;
 }
 
-void ata_primary_irq_handler(registers_t regs){
-    LOG("ATA Primary IRQ");
+void ata_primary_irq_handler(registers_t){
     inb(ATA_PRIMARY_BASE + ATA_STATUS_REG);
     ata_primary_irq = 1;
     arch_irq_send_eoi(ATA_PRIMARY_IRQ + 32);
 }
 
-void ata_secondary_irq_handler(registers_t regs){
-    LOG("ATA Secondary IRQ");
+void ata_secondary_irq_handler(registers_t){
     inb(ATA_SECONDARY_BASE + ATA_STATUS_REG);
     ata_secondary_irq = 1;
     arch_irq_send_eoi(ATA_SECONDARY_IRQ + 32);
 }
+
+driver_t ata_driver = {
+    .name = "ATA PIO",
+    .init = ata_init,
+    .exit = ata_exit
+};
