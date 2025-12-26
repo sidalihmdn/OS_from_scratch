@@ -39,6 +39,8 @@ uint8_t rtc_write_register(uint8_t reg, uint8_t value){
 bool arch_rtc_is_updating(){
     return rtc_read_register(RTC_STATUS_A) & RTC_UIP_FLAG;
 }
+
+
 void arch_rtc_get_time(rtc_time_t* time){
     while (arch_rtc_is_updating());
     time->second = rtc_read_register(RTC_REG_SEC);
