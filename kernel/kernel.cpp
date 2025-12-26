@@ -2,6 +2,7 @@
 #include <libc/string.h>
 #include <libc/mem.h>
 #include <kernel/init.h>
+#include <kernel/driver.h>
 #include <drivers/keyboard.h>
 #include <drivers/display/console.h>
 #include <drivers/display/vbe.h>
@@ -11,9 +12,9 @@
 #include <kernel/panic.h>
 #include <tests/libc_test.h>
 #include <tests/clock_timing_test.h>
-#include <drivers/clock/clock.h>
-#include <drivers/blocks/ata/ata.h>
-#include <drivers/blocks/block_device.h>
+#include <drivers/clock.h>
+#include <drivers/ata.h>
+#include <drivers/block_device.h>
 #if DEBUG
 //some debug code
 #endif
@@ -42,13 +43,17 @@ extern "C" void kernel_main(multiboot_info_t* mb_info){
     init_heap();
     console_init(multiboot_info);
     init_clock();
-    ata_init();
+    // =========== DRIVER INITIALIZATION ===========
+    driver_register(&ata_driver);
+    ata_driver.init();
+
+
+    // =========== DRIVER INITIALIZATION END ===========
     // printk("Welcome to OS from Scratch!\n");
     // printk("Type 'help' for commands.\n");
     // printk("os > ");
 
     char buffer[256];
-    asm volatile("xchg %bx, %bx");
     for(;;){
         if (get_input_buffer(buffer, 256)) {
             if (strcmp(buffer, (char*)"help") == 0) {
@@ -88,10 +93,4 @@ void print_memory_map(multiboot_info_t* mb_info){
         printk("\tlength : %s ", ptr_to_hex(entry->len));
         printk("\ttype : %s\n", int2String(entry->type));
     }
-}
-
-void print_mem(mmap_entry_t* entry, void* context){
-    printk("base : %s ", ptr_to_hex(entry->addr));
-    printk("\tlength : %s ", ptr_to_hex(entry->len));
-    printk("\ttype : %s\n", int2String(entry->type));
 }
