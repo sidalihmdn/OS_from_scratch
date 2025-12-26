@@ -113,7 +113,7 @@ void isr13_handler(registers_t regs){
     exception_handler(regs, "General Protection Fault");
 }
 
-void isr14_handler(registers_t regs){
+void isr14_handler(registers_t){
     printk("PAGE FAULT! Address: %x\n", arch_get_fault_address());
     while(1);
 }
