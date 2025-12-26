@@ -2,6 +2,7 @@
 #include <boot/multiboot_helpers.h>
 #include <unit_types.h>
 #include <kernel/mem/heap.h>
+#include <kernel/driver.h>
 #include <libc/log.h>
 #include <libc/mem.h>
 
@@ -17,6 +18,10 @@ void vbe_init(multiboot_info_t* mb_info){
     * allocate 3 time the size of the buffer so we can keep some history
     */
     video_buffer = (uintptr_t*)kmalloc(size); 
+}
+
+void vbe_exit(){
+    kfree(video_buffer);
 }
 
 void vbe_put_pixel(uint32_t x, uint32_t y, uint32_t color){
@@ -67,18 +72,6 @@ void vbe_scroll_up(uint32_t lines, uint32_t bg_color){
 uint32_t vbe_rgb(uint8_t r, uint8_t g, uint8_t b){
     return (r << 16) | (g << 8) | b;
 } 
-    
-void vbe_draw_line(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t color){
-    for(uint32_t i = x1; i < x2; i++){
-        vbe_put_pixel(i, y1, color);
-    }
-}
-
-void vbe_draw_rect(uint32_t x1, uint32_t y1, uint32_t x2, uint32_t y2, uint32_t color){
-    for(uint32_t i = x1; i < x2; i++){
-        vbe_put_pixel(i, y1, color);
-    }
-}
 
 void vbe_swap_buffer(){
     memcpy((void*)VIDEO_VRT_ADDR, (void*)video_buffer, size);
