@@ -58,11 +58,7 @@ void print_char(char attribute, int col, int row , char character){
 }
 
 void print_string(const char string[], int len){
-    int offset, col, row;
     for(int i=0 ; i < len ; i++){
-        //offset = get_cursor();
-        //col = offset%(MAX_COL)/2;
-        //row = offset/(2*MAX_COL);
         print_char(WHITE_ON_BLACK,-1 , -1 , string[i]);
     }
 }
