@@ -5,6 +5,7 @@
 
 #define SIMPLEFS_MAGIC 0x12345678
 #define SIMPLEFS_MAX_DIRECT 12
+#define SIMPLEFS_BLOCK_SIZE 4096
 
 typedef struct {
   uint32_t magic;

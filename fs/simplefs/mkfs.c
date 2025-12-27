@@ -1,11 +1,13 @@
 #include <unit_types.h>
 #include <drivers/block_device.h>
 #include <libc/mem.h>
+#include <kernel/mem.h>
 #include <errno.h>
 #include <sys/stat.h>
 #include <drivers/clock.h>
 #include "simplefs_internals.h"
 #include "superblock.h"
+#include "inode.h"
 
 int mkfs(block_device_t *device, uint32_t block_size, uint32_t total_blocks) {
   superblock_t sb;
@@ -48,6 +50,14 @@ int mkfs(block_device_t *device, uint32_t block_size, uint32_t total_blocks) {
     }
   }
 
+  for (uint32_t i = 0; i < inode_table_blocks; i++) {
+    if (device->write(device, sb.inode_table_block + i, zero_block, block_size) < 0) {
+      kfree(zero_block);
+      return -EIO;
+    }
+  }
+
+
   inode_t root_inode;
   memset(&root_inode, 0, sizeof(inode_t));
   root_inode.mode = S_IFDIR | 0x755; /* drwxr-xr-x */
@@ -55,6 +65,8 @@ int mkfs(block_device_t *device, uint32_t block_size, uint32_t total_blocks) {
   root_inode.size = 0;
   root_inode.atime = root_inode.mtime = root_inode.ctime = (uint32_t)clock_get_unix_timestamp();
 
-  
-
+  sfs_write_inode(device, &sb, 1, &root_inode);
+  sfs_set_inode_bitmap(device, &sb, 1); /* mark root inode as used */
+  kfree(zero_block);
+  return 0;
 }
