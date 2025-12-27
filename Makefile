@@ -35,7 +35,8 @@ C_DIRS := \
 	drivers/blocks/ata \
 	drivers/blocks \
 	kernel/driver \
-	kernel/mem
+	kernel/mem \
+	fs/simplefs \
 
 CPP_DIRS := \
 	arch/x86/time \
