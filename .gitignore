@@ -2,6 +2,7 @@
 *.bin
 *.elf
 *.iso
+**/.DS_Store
 .vscode/
 Build/
 build/
