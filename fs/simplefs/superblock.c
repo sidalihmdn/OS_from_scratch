@@ -1,5 +1,6 @@
 #include <drivers/block_device.h>
 #include <libc/mem.h>
+#include <kernel/mem.h>
 #include <errno.h>
 #include "simplefs_internals.h"
 
@@ -45,6 +46,6 @@ int sfs_validate_superblock(superblock_t* sb){
     if (sb->free_inodes > sb->inode_count){
         return -EINVAL;
     }
-    
+
     return 0;
 }
