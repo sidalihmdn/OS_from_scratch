@@ -39,7 +39,7 @@ typedef struct {
   uint16_t rec_len;
   uint8_t name_len;
   uint8_t file_type;
-  char name[256];
+  char name[];
 } dir_entry_t;
 
 #endif
