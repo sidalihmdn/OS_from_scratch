@@ -82,6 +82,11 @@ void sfs_free_block(block_device_t* device, superblock_t* sb, uint32_t block_num
     kfree(bitmap);
 }
 
+/// @brief  Get the physical block number for a given logical block index in an inode.  
+/// @param device 
+/// @param node 
+/// @param block_index 
+/// @return physical block number, or 0 if not allocated 
 uint32_t sfs_get_block(block_device_t* device, inode_t* node, uint32_t block_index){
 
     /* direct blocks*/
@@ -118,6 +123,16 @@ uint32_t sfs_map_block(block_device_t* device, superblock_t* sb, inode_t* inode,
     if (physical_block == 0){
         return 0; // no space
     }
+
+    // zero out the newly allocated block
+    uint8_t* zero_block = (uint8_t*)kmalloc(SIMPLEFS_BLOCK_SIZE);
+    memset(zero_block, 0, SIMPLEFS_BLOCK_SIZE);
+    if (device->write(device, physical_block,  zero_block, SIMPLEFS_BLOCK_SIZE) < 0){
+        kfree(zero_block);
+        sfs_free_block(device, sb, physical_block);
+        return 0; // write error
+    }
+    kfree(zero_block);
 
     if (block_index < SIMPLEFS_MAX_DIRECT){
         inode->blocks[block_index] = physical_block;
