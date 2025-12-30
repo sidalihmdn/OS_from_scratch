@@ -78,6 +78,8 @@ int sfs_read_inode(block_device_t *device, superblock_t *sb, uint32_t inode_num,
 }
 
 int sfs_write_inode(block_device_t *device, superblock_t *sb, uint32_t inode_num, inode_t *inode) {
+  /* this function writes */
+  
   if (inode_num == 0 || inode_num > sb->inode_count){
     return -EINVAL;
   }
@@ -101,6 +103,11 @@ int sfs_write_inode(block_device_t *device, superblock_t *sb, uint32_t inode_num
 }
 
 int sfs_set_inode_bitmap(block_device_t *device, superblock_t *sb, uint32_t inode_num) {
+  /*
+  * Marks the inode as used in the inode bitmap.
+  * Returns 0 on success, negative error code on failure.
+  */
+
   if (inode_num == 0 || inode_num >= sb->inode_count) {
     return -EINVAL;
   }
