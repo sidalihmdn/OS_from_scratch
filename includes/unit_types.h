@@ -1,6 +1,8 @@
 #ifndef MY_UINT_TYPES_H // in order to prevent a double include
 #define MY_UINT_TYPES_H
 
+#define ALIGN(x, a)   (((x) + ((a) - 1)) & ~((a) - 1))
+
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
