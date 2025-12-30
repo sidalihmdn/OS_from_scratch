@@ -79,12 +79,19 @@ char* ptr_to_hex(uint32_t ptr) {
     return buffer;
 }
 
-int strcmp(char* s1, char* s2) {
+int strcmp(const char* s1, const char* s2) {
     while (*s1 && (*s1 == *s2)) {
         s1++;
         s2++;
     }
     return *(unsigned char*)s1 - *(unsigned char*)s2;
+}
+int strlen(const char* s) {
+    int len = 0;
+    while (s[len] != '\0') {
+        len++;
+    }
+    return len;
 }
 
 void printk(const char* s, ...){
