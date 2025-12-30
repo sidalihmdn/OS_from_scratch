@@ -7,7 +7,7 @@
 
 uint32_t sfs_alloc_block(superblock_t* sb);
 void sfs_free_block(superblock_t* sb, uint32_t block_num);
-uint32_t sfs_get_block(inode_t* node, uint32_t block_index); 
-uint32_t sfs_map_block(inode_t* node, uint32_t block_index, int create);
+uint32_t sfs_get_block(block_device_t* device, inode_t* node, uint32_t block_index); 
+uint32_t sfs_map_block(block_device_t* device, superblock_t* sb, inode_t* node, uint32_t block_index, int create);
 
 #endif /* SIMPLEFS_BLOCK_H */
