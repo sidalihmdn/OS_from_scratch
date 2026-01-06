@@ -2,7 +2,7 @@
 #define MY_UINT_TYPES_H
 
 #define ALIGN(x, a)   (((x) + ((a) - 1)) & ~((a) - 1))
-
+#define MIN(a, b)    ((a) < (b) ? (a) : (b))
 
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;

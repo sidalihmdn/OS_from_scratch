@@ -94,6 +94,18 @@ int strlen(const char* s) {
     return len;
 }
 
+const char* strrchr(const char* s, char c){
+    const char* last = NULL;
+    while (*s) {
+        if (*s == c) {
+            last = s;
+        }
+        s++;
+    }
+    return last;
+}
+
+
 void printk(const char* s, ...){
     // printf like function
     va_list args;

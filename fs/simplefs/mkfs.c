@@ -27,8 +27,9 @@ int mkfs(block_device_t *device, uint32_t block_size, uint32_t total_blocks) {
   sb.first_data_block = sb.inode_table_block + inode_table_blocks;
   sb.free_blocks = total_blocks - sb.first_data_block;
   sb.free_inodes = n_inodes - 1;
+  sb.device = device;
 
-  if (sfs_write_superblock(device, &sb) < 0) {
+  if (sfs_write_superblock(&sb) < 0) {
     return -EIO;
   }
 
@@ -65,8 +66,8 @@ int mkfs(block_device_t *device, uint32_t block_size, uint32_t total_blocks) {
   root_inode.size = 0;
   root_inode.atime = root_inode.mtime = root_inode.ctime = (uint32_t)clock_get_unix_timestamp();
 
-  sfs_write_inode(device, &sb, 1, &root_inode);
-  sfs_set_inode_bitmap(device, &sb, 1); /* mark root inode as used */
+  sfs_write_inode(&sb, 1, &root_inode);
+  sfs_set_inode_bitmap(&sb, 1); /* mark root inode as used */
   kfree(zero_block);
   return 0;
 }

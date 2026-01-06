@@ -8,6 +8,7 @@ char int2char(int a);
 char *int2String(int a);
 char* ptr_to_hex(uint32_t ptr);
 int strcmp(const char* s1, const char* s2);
+const char* strrchr(char* s, char c);
 void printk(const char* s, ...);
 int strlen(const char* s);
 

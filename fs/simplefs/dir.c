@@ -13,10 +13,10 @@
 #include "dir.h"
 
 
-int sfs_create_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_node, const char* name, uint32_t inode_num, uint8_t type){
+int sfs_create_dir_entry(superblock_t* sb, inode_t* dir_node, const char* name, uint32_t inode_num, uint8_t type){
     /* check if the entry exists */
     uint32_t existing_inode;
-    if (sfs_lookup_dir_entry(device, sb, dir_node, name, &existing_inode) == 0){
+    if (sfs_lookup_dir_entry(sb, dir_node, name, &existing_inode) == 0){
         return -EEXIST;
     }
 
@@ -35,14 +35,14 @@ int sfs_create_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     }
 
     /* get physical block if does not exist allocate */    
-    uint32_t phys_block = sfs_get_block(device, dir_node, i_block);
+    uint32_t phys_block = sfs_get_block(sb, dir_node, i_block);
     if (phys_block == 0){
         return -ENOSPC;
     }
 
     /* read block data */
     uint8_t* block_data = (uint8_t*)kmalloc(SIMPLEFS_BLOCK_SIZE);
-    if (device->read(device, phys_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
+    if (sb->device->read(sb->device, phys_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
         kfree(block_data);
         return -EIO;
     }
@@ -56,7 +56,7 @@ int sfs_create_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     memcpy(entry->name, name, name_len);
 
     /* write block data back */
-    if (device->write(device, phys_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
+    if (sb->device->write(sb->device, phys_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
         kfree(block_data);
         return -EIO;
     }
@@ -65,13 +65,13 @@ int sfs_create_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     /* update dir_node size */
     dir_node->size += rec_len;
     dir_node->mtime = clock_get_unix_timestamp();
-    if (sfs_write_inode(device, sb, inode_num, dir_node) < 0){
+    if (sfs_write_inode(sb, inode_num, dir_node) < 0){
         return -EIO;
     }
     return 0;
 }
 
-int sfs_remove_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_node, const char* name){
+int sfs_remove_dir_entry(superblock_t* sb, inode_t* dir_node, const char* name){
     /* check if the node is a directory */
     if ((dir_node->mode & S_IFMT) != S_IFDIR){
         return -ENOTDIR;
@@ -88,7 +88,7 @@ int sfs_remove_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     while(offset < dir_node->size){
         uint32_t i_block = offset / SIMPLEFS_BLOCK_SIZE;
         uint32_t block_offset = offset % SIMPLEFS_BLOCK_SIZE;
-        uint32_t phys_block = sfs_get_block(device, dir_node, i_block);
+        uint32_t phys_block = sfs_get_block(sb, dir_node, i_block);
 
         /* the block does not exist on the node*/
         if (phys_block == 0){
@@ -97,7 +97,7 @@ int sfs_remove_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
 
         }
 
-        if(device->read(device, phys_block, buffer, SIMPLEFS_BLOCK_SIZE) < 0){
+        if(sb->device->read(sb->device, phys_block, buffer, SIMPLEFS_BLOCK_SIZE) < 0){
             kfree(buffer);
             return -EIO;
         }
@@ -125,7 +125,7 @@ int sfs_remove_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
                 }
 
                 /* write the block back */
-                if(device->write(device, phys_block, buffer, SIMPLEFS_BLOCK_SIZE) < 0){
+                if(sb->device->write(sb->device, phys_block, buffer, SIMPLEFS_BLOCK_SIZE) < 0){
                     kfree(buffer);
                     return -EIO;
                 }
@@ -144,7 +144,7 @@ int sfs_remove_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     return -ENOENT;
 }
 
-int sfs_lookup_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_node, const char* name, uint32_t* out_inode_num){
+int sfs_lookup_dir_entry(superblock_t* sb, inode_t* dir_node, const char* name, uint32_t* out_inode_num){
 
     /* check if dir_node is a directory */
     if ((dir_node->mode & S_IFMT) != S_IFDIR){
@@ -160,8 +160,7 @@ int sfs_lookup_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     while(offset < dir_node->size){
         uint32_t i_block = offset / SIMPLEFS_BLOCK_SIZE;
         uint32_t block_offset = offset % SIMPLEFS_BLOCK_SIZE;
-        uint32_t physical_block = sfs_get_block(device, dir_node, i_block);
-
+        uint32_t physical_block = sfs_get_block(sb, dir_node, i_block);
         /* block not allocated - go to next block */
         if (physical_block == 0){
             offset += SIMPLEFS_BLOCK_SIZE;
@@ -169,7 +168,7 @@ int sfs_lookup_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
         }
 
         /* read block data */
-        if (device->read(device, physical_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
+        if (sb->device->read(sb->device, physical_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
             kfree(block_data);
             return -EIO;
         }
@@ -195,7 +194,7 @@ int sfs_lookup_dir_entry(block_device_t* device, superblock_t* sb, inode_t* dir_
     return -ENOENT;
 }
 
-int sfs_list_dir_entries(block_device_t* device, superblock_t* sb, inode_t* dir_node, void(*callback)(void* entry, void* context), void* context){
+int sfs_list_dir_entries(superblock_t* sb, inode_t* dir_node, void(*callback)(void* entry, void* context), void* context){
     /* check if dir_node is a directory */
     if ((dir_node->mode & S_IFMT) != S_IFDIR){
         return -ENOTDIR;
@@ -208,7 +207,7 @@ int sfs_list_dir_entries(block_device_t* device, superblock_t* sb, inode_t* dir_
     while(offset < dir_node->size){
         uint32_t i_block = offset / SIMPLEFS_BLOCK_SIZE;
         uint32_t block_offset = offset % SIMPLEFS_BLOCK_SIZE;
-        uint32_t physical_block = sfs_get_block(device, dir_node, i_block);
+        uint32_t physical_block = sfs_get_block(sb, dir_node, i_block);
 
         /* block not allocated - go to next block */
         if (physical_block == 0){
@@ -217,7 +216,7 @@ int sfs_list_dir_entries(block_device_t* device, superblock_t* sb, inode_t* dir_
         }
 
         /* read block data */
-        if (device->read(device, physical_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
+        if (sb->device->read(sb->device, physical_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
             kfree(block_data);
             return -EIO;
         }
@@ -242,4 +241,52 @@ int sfs_list_dir_entries(block_device_t* device, superblock_t* sb, inode_t* dir_
     kfree(block_data);
     return 0;
 }
-    
+   
+
+int sfs_is_dir_empty(superblock_t* sb, inode_t* dir_node){
+    uint8_t* block_data = (uint8_t*)kmalloc(SIMPLEFS_BLOCK_SIZE);
+    uint32_t offset = 0;
+
+    /* iterate over directory entries */
+    while(offset < dir_node->size){
+        uint32_t i_block = offset / SIMPLEFS_BLOCK_SIZE;
+        uint32_t block_offset = offset % SIMPLEFS_BLOCK_SIZE;
+        uint32_t physical_block = sfs_get_block(sb, dir_node, i_block);
+
+        /* block not allocated - go to next block */
+        if (physical_block == 0){
+            offset += SIMPLEFS_BLOCK_SIZE;
+            continue;
+        }
+
+        /* read block data */
+        if (sb->device->read(sb->device, physical_block, block_data, SIMPLEFS_BLOCK_SIZE) < 0){
+            kfree(block_data);
+            return 0;
+        }
+
+        /* iterate over directory entries in the block */
+        while ( (offset/ SIMPLEFS_BLOCK_SIZE) == i_block && offset < dir_node->size){
+
+            /* get directory entry */
+            dir_entry_t* entry = (dir_entry_t*)(block_data + block_offset);
+            if (entry->rec_len == 0 || entry->rec_len > SIMPLEFS_BLOCK_SIZE - block_offset) {
+                kfree(block_data);
+                return 0;
+            }
+
+            if (entry->name_len > 0 && entry->inode != 0){
+                if (strcmp(entry->name, ".") == 0 || strcmp(entry->name, "..") == 0){
+                    /* skip . and .. entries */
+                } else {
+                    kfree(block_data);
+                    return 0; /* not empty */
+                }
+            }
+            offset += entry->rec_len;
+            block_offset += entry->rec_len;
+        }
+    }
+    kfree(block_data);
+    return 1; /* empty */
+}

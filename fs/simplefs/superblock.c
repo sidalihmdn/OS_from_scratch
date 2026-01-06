@@ -4,10 +4,10 @@
 #include <errno.h>
 #include "simplefs_internals.h"
 
-int sfs_read_superblock(block_device_t* device, superblock_t* sb){
+int sfs_read_superblock(superblock_t* sb){
     uint8_t* buffer = (uint8_t*)kmalloc(512);
 
-    if (device->read(device, 1, buffer, 512) < 0){
+    if (sb->device->read(sb->device, 1, buffer, 512) < 0){
         kfree(buffer);
         return -EIO;
     }
@@ -16,12 +16,12 @@ int sfs_read_superblock(block_device_t* device, superblock_t* sb){
     return 0;
 }
 
-int sfs_write_superblock(block_device_t* device, superblock_t* sb){
+int sfs_write_superblock(superblock_t* sb){
     uint8_t* buffer = (uint8_t*)kmalloc(512);
     memset(buffer, 0, 512);
     memcpy(buffer, sb, sizeof(superblock_t));
 
-    if (device->write(device, 1, buffer, 512) < 0){
+    if (sb->device->write(sb->device, 1, buffer, 512) < 0){
         kfree(buffer);
         return -EIO;
     }
